@@ -2,7 +2,7 @@ import torch
 
 from typing import Tuple
 from numpy.typing import ArrayLike
-from torch.types import _TensorOrTensors, Module
+from torch.types import _TensorOrTensors
 
 from model.classifier import OsuClassifier
 from const import *
