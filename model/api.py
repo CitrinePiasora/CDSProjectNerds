@@ -6,4 +6,4 @@ from typing import Optional
 class Response(BaseModel):
     code: int
     message: str
-    data: Optional[dict] = None
+    data: Optional[dict]
