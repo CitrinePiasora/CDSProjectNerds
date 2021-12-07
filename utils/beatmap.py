@@ -16,12 +16,11 @@ _SECTION_TYPES = {
 }
 
 
-async def map_to_class(_cls, data):
+def map_to_class(_cls, data):
     """
     Converts the data from a simple list to a class.
     Uses the items in the data list to set the attributes of the class.
     """
-    data = await data
     for i in range(len(data)):
         data[i] = _cls(*data[i])
     return data
@@ -146,10 +145,10 @@ class Beatmap:
         self.sections = {}
         self.format_version = await self.file_object.readline()
         await self.parse_sections()
-        await map_to_class(HitObjects, self.sections["HitObjects"])
+        map_to_class(HitObjects, self.sections["HitObjects"])
         return self
 
-    def get_data(self) -> Tuple[List, List, List]:
+    async def get_data(self) -> Tuple[List, List, List]:
         """
         Converts the beatmap to an array.
         structure:
@@ -212,7 +211,7 @@ class Beatmap:
         """
         async for section in self._parse_section_header():
             func = f"_read_type_{_SECTION_TYPES[section]}_section"
-            self.sections[section] = getattr(self, func)()
+            self.sections[section] = await getattr(self, func)()
         
 
     async def _parse_section_header(self) -> AsyncGenerator[str, None]:
@@ -240,7 +239,7 @@ class Beatmap:
         Read the A section, where each line is a key-value pair.
         """
         d = {}
-        
+
         line = await self.file_object.readline()
         line = line.rstrip()
         while line != "":
