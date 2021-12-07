@@ -133,7 +133,7 @@ class Beatmap:
         self.parse_sections()
         map_to_class(HitObjects, self.sections["HitObjects"])
 
-    def get_data(self) -> Tuple[List, List]:
+    def get_data(self) -> Tuple[List, List, List]:
         """
         Converts the beatmap to an array.
         structure:
