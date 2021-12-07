@@ -1,7 +1,9 @@
-import enum
-from types import coroutine
-from typing import AsyncGenerator, Dict, List, TextIO, Tuple, Union
+from typing import AsyncGenerator, Dict, List, Tuple, Union
 from aiofiles.threadpool.text import AsyncTextIOWrapper
+
+import enum
+
+from model.exceptions import InvalidFileException
 
 
 _SECTION_TYPES = {
@@ -144,6 +146,8 @@ class Beatmap:
         self.file_object = file_object
         self.sections = {}
         self.format_version = await self.file_object.readline()
+        if not self.format_version.startswith("osu file format"):
+            raise InvalidFileException()
         await self.parse_sections()
         map_to_class(HitObjects, self.sections["HitObjects"])
         return self

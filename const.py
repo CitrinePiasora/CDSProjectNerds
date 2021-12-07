@@ -22,4 +22,6 @@ DROPOUT = 0.5
 NUM_CLASSES = 7
 
 # API Status Code
-SUCCESS = 0
+class APIStatusCode:
+    SUCCESS = 0
+    INVALID_FILE = 1

@@ -1,15 +1,19 @@
+from starlette.responses import JSONResponse
 import torch
+from pathlib import Path
 from aiofiles import tempfile
-from fastapi.openapi.utils import get_openapi
-from fastapi import FastAPI, File, UploadFile
+from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI, File, UploadFile, Request
 
 from const import *
 from model.api import Response
+from model.exceptions import InvalidFileTypeException, InvalidFileException
 from model.classifier import OsuClassifier
 from utils.beatmap import Beatmap
 from utils.predict import predict_map_type
 
 
+# API init
 description = "OsuClassy is a beatmap classifier that uses machine learning to classify beatmaps."
 tags_metadata = [
     {
@@ -38,6 +42,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url=None,
 )
+
+# Classification Model
 classification_model = OsuClassifier(
     MAP_INFO_FEATURES,
     HIT_OBJECTS_FEATURES,
@@ -51,10 +57,25 @@ classification_model = OsuClassifier(
 classification_model.eval()
 classification_model.load_state_dict(torch.load("model/pretrained_weights/osuclasification_best.pt"))
 
+# Exceptions Handler
+@app.exception_handler(InvalidFileTypeException)
+async def invalid_file_handler(request: Request, exc: InvalidFileTypeException):
+    return JSONResponse(
+        status_code=400,
+        content=jsonable_encoder(Response(code=APIStatusCode.INVALID_FILE, message="Invalid file type. Only .osu files are allowed."))
+    )
+@app.exception_handler(InvalidFileException)
+async def invalid_file_handler(request: Request, exc: InvalidFileException):
+    return JSONResponse(
+        status_code=400,
+        content=jsonable_encoder(Response(code=APIStatusCode.INVALID_FILE, message="Invalid file. File might be corrupted or not an osu beatmap file."))
+    )
+
+# Routes
 @app.get("/", tags=["beatmaps"], response_model=Response)
 async def root():
     return Response(
-        code=SUCCESS,
+        code=APIStatusCode.SUCCESS,
         message="Welcome to OsuClassy API!",
     )
 
@@ -67,19 +88,26 @@ async def predict_map(file: UploadFile=File(...)):
     \f
     :param file: Uploaded file.
     """
+    if Path(file.filename).suffix != ".osu":
+        raise InvalidFileException()
     async with tempfile.TemporaryFile(mode="w+") as f:
         content = await file.read()
         # Decode and remove carriage return for beatmap saved on windows
         # Windows is annoying to handle :/
-        content = content.decode("utf-8").replace("\r", "")
+        try:
+            content = content.decode("utf-8").replace("\r", "")
+        except UnicodeDecodeError:
+            raise InvalidFileException()
+        # Write and move the cursor to the beginning of the file
         await f.write(content)
         await f.seek(0)
+        # Parse and predict the beatmap
         bm = await Beatmap.create(f)
         map_type = await predict_map_type(classification_model, bm)
 
-    response = Response(
-        code=SUCCESS,
-        message="Success",
+    return Response(
+        code=APIStatusCode.SUCCESS,
+        message="Successfully predicted beatmap type!",
         data={
             "beatmap_id": bm.sections["Metadata"]["BeatmapID"],
             "beatmap_set_id": bm.sections["Metadata"]["BeatmapSetID"],
@@ -90,4 +118,3 @@ async def predict_map(file: UploadFile=File(...)):
             "predicted_type": map_type,
         }
     )
-    return response
