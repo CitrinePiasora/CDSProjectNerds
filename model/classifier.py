@@ -1,3 +1,6 @@
+from typing import List
+from torch.types import _TensorOrTensors
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -52,7 +55,7 @@ class OsuClassifier(nn.Module):
         self.bn2 = nn.BatchNorm1d(self.hidden_size)
         self.bn3 = nn.BatchNorm1d(self.hidden_size)
     
-    def self_attention(self, x, w):
+    def self_attention(self, x: _TensorOrTensors, w: _TensorOrTensors) -> _TensorOrTensors:
         """
         Self-Attention mechanism for the RNN.
         https://arxiv.org/abs/1706.03762
@@ -70,7 +73,8 @@ class OsuClassifier(nn.Module):
         attn = torch.bmm(x.transpose(1, 2), attn).squeeze(2)
         return torch.tanh(attn)
     
-    def forward(self, map_info, hit_objects, slider_points, seq_ho, seq_sp):
+    def forward(self, map_info: _TensorOrTensors, hit_objects: _TensorOrTensors, 
+                slider_points: _TensorOrTensors, seq_ho: List[int], seq_sp: List[int]) -> _TensorOrTensors:
         # Hit Objects
         # Pack the padded hit objects
         hit_objects = nn.utils.rnn.pack_padded_sequence(

@@ -130,13 +130,6 @@ class Beatmap:
     Beatmap Class holds the beatmap data.
     """
 
-    # def __init__(self, file_object: TextIO) -> None:
-    #     self.file_object = file_object
-    #     self.sections = {}
-    #     self.format_version = self.file_object.readline()
-    #     self.parse_sections()
-    #     map_to_class(HitObjects, self.sections["HitObjects"])
-
     @classmethod
     async def create(cls, file_object: AsyncTextIOWrapper):
         """
