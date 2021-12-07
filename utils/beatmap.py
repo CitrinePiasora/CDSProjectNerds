@@ -147,6 +147,7 @@ class Beatmap:
         self.format_version = await self.file_object.readline()
         await self.parse_sections()
         await map_to_class(HitObjects, self.sections["HitObjects"])
+        return self
 
     def get_data(self) -> Tuple[List, List, List]:
         """

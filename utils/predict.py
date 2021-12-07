@@ -8,12 +8,10 @@ from utils.beatmap import Beatmap
 from const import *
 
 
-def predict_map_type(beatmap_path: str, model: OsuClassifier) -> List[Tuple[str, float]]:
+def predict_map_type(model: OsuClassifier, beatmap: Beatmap) -> List[Tuple[str, float]]:
     """
     Predict the map type of a beatmap.
     """
-    with open(beatmap_path, 'r') as f:
-        beatmap = Beatmap(f)
     map_info, hit_objects, slider_points = beatmap.get_data()
     assert len(hit_objects), "No hit objects found in beatmap"
 

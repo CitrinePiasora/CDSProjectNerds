@@ -7,10 +7,10 @@ class OsuClassifier(nn.Module):
     """
     Classifier for osu! beatmaps.
     """
-    def __init__(self, batch_size: int, map_info_features: int, hit_objects_features: int,
+    def __init__(self, map_info_features: int, hit_objects_features: int,
                 slider_points_features: int, num_classes: int, hidden_size: int=256,
                 num_layers: int=2, bidirectional: bool=False, dropout: float=0.5) -> None:
-        self.batch_size = batch_size
+        super(OsuClassifier, self).__init__()
         self.map_info_features = map_info_features
         self.hit_objects_features = hit_objects_features
         self.slider_points_features = slider_points_features
