@@ -18,22 +18,6 @@ def convert_time_to_diff(arr: ArrayLike) -> ArrayLike:
     arr[0, 2] = 0
     return arr
 
-def get_accuracy(y_pred: _TensorOrTensors, y_true: _TensorOrTensors) -> float:
-    """
-    Calculate the accuracy of the prediction.
-    """
-    y_pred = torch.round(y_pred)
-    correct = (y_pred == y_true).sum()
-    return correct / (y_pred.shape[0] * y_pred.shape[1])
-
-def clip_gradient(model: OsuClassifier, clip_value: float) -> None:
-    """
-    Clip the gradient of the model.
-    """
-    params = list(filter(lambda p: p.grad is not None, model.parameters()))
-    for p in params:
-        p.grad.data.clamp_(-clip_value, clip_value)
-
 def standardize(map_info: ArrayLike, hit_objects: ArrayLike, slider_points: ArrayLike) -> Tuple[ArrayLike, ArrayLike, ArrayLike]:
     """
     Standardize the map info, hit objects and slider points.
