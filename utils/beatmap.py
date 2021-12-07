@@ -1,5 +1,7 @@
 import enum
-from typing import Dict, List, TextIO, Tuple, Union
+from types import coroutine
+from typing import AsyncGenerator, Dict, List, TextIO, Tuple, Union
+from aiofiles.threadpool.text import AsyncTextIOWrapper
 
 
 _SECTION_TYPES = {
@@ -14,14 +16,15 @@ _SECTION_TYPES = {
 }
 
 
-def map_to_class(_cls, data):
-        """
-        Converts the data from a simple list to a class.
-        Uses the items in the data list to set the attributes of the class.
-        """
-        for i in range(len(data)):
-            data[i] = _cls(*data[i])
-        return data
+async def map_to_class(_cls, data):
+    """
+    Converts the data from a simple list to a class.
+    Uses the items in the data list to set the attributes of the class.
+    """
+    data = await data
+    for i in range(len(data)):
+        data[i] = _cls(*data[i])
+    return data
 
 
 class HitObjects:
@@ -126,12 +129,24 @@ class Beatmap:
     Beatmap Class holds the beatmap data.
     """
 
-    def __init__(self, file_object: TextIO) -> None:
+    # def __init__(self, file_object: TextIO) -> None:
+    #     self.file_object = file_object
+    #     self.sections = {}
+    #     self.format_version = self.file_object.readline()
+    #     self.parse_sections()
+    #     map_to_class(HitObjects, self.sections["HitObjects"])
+
+    @classmethod
+    async def create(cls, file_object: AsyncTextIOWrapper):
+        """
+        Creates a new beatmap object.
+        """
+        self = Beatmap()
         self.file_object = file_object
         self.sections = {}
-        self.format_version = self.file_object.readline()
-        self.parse_sections()
-        map_to_class(HitObjects, self.sections["HitObjects"])
+        self.format_version = await self.file_object.readline()
+        await self.parse_sections()
+        await map_to_class(HitObjects, self.sections["HitObjects"])
 
     def get_data(self) -> Tuple[List, List, List]:
         """
@@ -190,20 +205,20 @@ class Beatmap:
         
         return map_info, hit_objects, slider_points
 
-    def parse_sections(self):
+    async def parse_sections(self):
         """
         Parses the beatmap file and stores the sections in a dictionary.
         """
-        for section in self._parse_section_header():
+        async for section in self._parse_section_header():
             func = f"_read_type_{_SECTION_TYPES[section]}_section"
             self.sections[section] = getattr(self, func)()
         
 
-    def _parse_section_header(self) -> str:
+    async def _parse_section_header(self) -> AsyncGenerator[str, None]:
         """
         Parses the section header.
         """
-        for line in self.file_object:
+        async for line in self.file_object:
             line = line.rstrip()
             if line.startswith("["):
                 yield line[1:-1]
@@ -219,30 +234,34 @@ class Beatmap:
         else:
             return val
 
-    def _read_type_a_section(self) -> Dict:
+    async def _read_type_a_section(self) -> Dict:
         """
         Read the A section, where each line is a key-value pair.
         """
         d = {}
         
-        line = self.file_object.readline().rstrip()
+        line = await self.file_object.readline()
+        line = line.rstrip()
         while line != "":
             k, v = line.split(":", 1)
             d[k] = self._parse_value(v.strip())
-            line = self.file_object.readline().rstrip()
+            line = await self.file_object.readline()
+            line = line.rstrip()
         
         return d
 
-    def _read_type_b_section(self) -> List:
+    async def _read_type_b_section(self) -> List:
         """
         Read the B section, where each line is a list of values.
         """
         l = []
 
-        line = self.file_object.readline().rstrip()
+        line = await self.file_object.readline()
+        line = line.rstrip()
         while line != "":
             if not line.lstrip().startswith("//"):
                 l.append(list(map(self._parse_value, line.split(","))))
-            line = self.file_object.readline().rstrip()
+            line = await self.file_object.readline()
+            line = line.rstrip()
 
         return l
