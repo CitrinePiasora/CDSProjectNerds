@@ -140,6 +140,7 @@ class Beatmap:
         self.sections = {}
         self.format_version = await self.file_object.readline()
         if not self.format_version.startswith("osu file format"):
+            print("Invalid file format!")
             raise InvalidFileException()
         await self.parse_sections()
         map_to_class(HitObjects, self.sections["HitObjects"])
