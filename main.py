@@ -1,9 +1,18 @@
-from starlette.responses import JSONResponse
+import time
 import torch
+import humanize
 from pathlib import Path
 from aiofiles import tempfile
+from datetime import datetime
+from starlette.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from fastapi import FastAPI, File, UploadFile, Request
+from fastapi import (
+    FastAPI, 
+    File, 
+    UploadFile, 
+    Request as FastAPIRequest, 
+    Response as FastAPIResponse,
+)
 
 from const import *
 from model.api import Response
@@ -50,22 +59,25 @@ classification_model = OsuClassifier(
     SLIDER_POINTS_FEATURES,
     NUM_CLASSES,
     hidden_size=HIDDEN_SIZE,
-    num_layers=NUM_LAYERS,
+    key_size=KEY_SIZE,
+    value_size=VALUE_SIZE,
+    n_layers=N_LAYERS,
+    attn_n_layers=ATTN_N_LAYERS,
     bidirectional=BIDIRECTIONAL,
-    dropout=DROPOUT,
+    dropout=DROPOUT
 )
 classification_model.eval()
 classification_model.load_state_dict(torch.load("model/pretrained_weights/osuclasification_best.pt"))
 
 # Exceptions Handler
 @app.exception_handler(InvalidFileTypeException)
-async def invalid_file_handler(request: Request, exc: InvalidFileTypeException):
+async def invalid_file_handler(request: FastAPIRequest, exc: InvalidFileTypeException):
     return JSONResponse(
         status_code=400,
         content=jsonable_encoder(Response(code=APIStatusCode.INVALID_FILE, message="Invalid file type. Only .osu files are allowed."))
     )
 @app.exception_handler(InvalidFileException)
-async def invalid_file_handler(request: Request, exc: InvalidFileException):
+async def invalid_file_handler(request: FastAPIRequest, exc: InvalidFileException):
     return JSONResponse(
         status_code=400,
         content=jsonable_encoder(Response(code=APIStatusCode.INVALID_FILE, message="Invalid file. File might be corrupted or not an osu beatmap file."))
@@ -79,6 +91,14 @@ async def root():
         message="Welcome to OsuClassy API!",
     )
 
+@app.get("/gib_cookie", response_model=Response)
+async def cookie_test(response: FastAPIResponse):
+    response.set_cookie(key="osuclassy_sid", value="some-random-generated-cookie")
+    return Response(
+        code=APIStatusCode.SUCCESS,
+        message="Cookie set!",
+    )
+
 @app.post("/predict", tags=["predict"], response_model=Response)
 async def predict_map(file: UploadFile=File(...)):
     """
@@ -89,6 +109,7 @@ async def predict_map(file: UploadFile=File(...)):
     :param file: Uploaded file.
     """
     if Path(file.filename).suffix != ".osu":
+        print("Invalid file extension!")
         raise InvalidFileException()
     async with tempfile.TemporaryFile(mode="w+") as f:
         content = await file.read()
@@ -97,10 +118,13 @@ async def predict_map(file: UploadFile=File(...)):
         try:
             content = content.decode("utf-8").replace("\r", "")
         except UnicodeDecodeError:
+            print("Error while decoding uploaded file!")
             raise InvalidFileException()
         # Write and move the cursor to the beginning of the file
         await f.write(content)
         await f.seek(0)
+        # Start a timer
+        start = datetime.now()
         # Parse and predict the beatmap
         bm = await Beatmap.create(f)
         map_type = await predict_map_type(classification_model, bm)
@@ -109,6 +133,7 @@ async def predict_map(file: UploadFile=File(...)):
         code=APIStatusCode.SUCCESS,
         message="Successfully predicted beatmap type!",
         data={
+            "processing_time": humanize.precisedelta(datetime.now() - start),
             "beatmap_id": bm.sections["Metadata"]["BeatmapID"],
             "beatmap_set_id": bm.sections["Metadata"]["BeatmapSetID"],
             "artist": bm.sections["Metadata"]["Artist"],
