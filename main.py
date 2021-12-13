@@ -83,7 +83,7 @@ classification_model = OsuClassifier(
     dropout=DROPOUT
 )
 classification_model.eval()
-classification_model.load_state_dict(torch.load("model/pretrained_weights/osuclasification_best.pt"))
+classification_model.load_state_dict(torch.load("model/pretrained_weights/osuclasification_best.pt", map_location=torch.device("cpu")))
 
 # Exceptions Handler
 @app.exception_handler(InvalidFileTypeException)
