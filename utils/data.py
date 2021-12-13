@@ -1,11 +1,8 @@
-import torch
-import numpy as np
-
 from typing import Tuple
 from numpy.typing import ArrayLike
-from torch.types import _TensorOrTensors
 
-from model.classifier import OsuClassifier
+import numpy as np
+
 from const import *
 
 

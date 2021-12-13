@@ -1,6 +1,3 @@
-from typing import List
-from torch.types import _TensorOrTensors
-
 import torch
 from torch import nn
 from torch.nn import functional as F
