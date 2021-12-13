@@ -145,7 +145,7 @@ class Beatmap:
         if not self.format_version.startswith("osu file format"):
             print("Invalid file!")
             raise InvalidFileException()
-        if int(self.format_version[-2:]) < 14:
+        if int(self.format_version[-2:]) < 12:
             print("Invalid file version!")
             raise BeatmapUnsupportedException()
         await self.parse_sections()
