@@ -1,0 +1,8 @@
+numpy==1.21.4
+
+humanize==3.13.1
+aiofiles==0.8.0
+
+fastapi==0.70.0
+uvicorn==0.15.0
+python-multipart==0.0.5
