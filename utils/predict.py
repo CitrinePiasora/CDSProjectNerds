@@ -19,7 +19,7 @@ async def predict_map_type(model: OsuClassifier, beatmap: Beatmap) -> List[Tuple
 
     # Preprocess the data
     map_info = np.asarray([map_info], dtype=np.float32)
-    hit_objects = data.convert_time_to_diff(np.asarray(hit_objects, dtype=np.float32))
+    hit_objects = data.add_diff_dim(np.asarray(hit_objects, dtype=np.float32))
     seq_ho = [hit_objects.shape[0]]
     slider_points = np.asarray(slider_points, dtype=np.float32)
     seq_sp = [slider_points.shape[0]]

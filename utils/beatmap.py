@@ -3,7 +3,10 @@ from aiofiles.threadpool.text import AsyncTextIOWrapper
 
 import enum
 
-from model.exceptions import InvalidFileException
+from model.exceptions import (
+    InvalidFileException,
+    BeatmapUnsupportedException,
+)
 
 
 _SECTION_TYPES = {
@@ -138,10 +141,13 @@ class Beatmap:
         self = Beatmap()
         self.file_object = file_object
         self.sections = {}
-        self.format_version = await self.file_object.readline()
+        self.format_version = (await self.file_object.readline()).rstrip()
         if not self.format_version.startswith("osu file format"):
-            print("Invalid file format!")
+            print("Invalid file!")
             raise InvalidFileException()
+        if int(self.format_version[-2:]) < 14:
+            print("Invalid file version!")
+            raise BeatmapUnsupportedException()
         await self.parse_sections()
         map_to_class(HitObjects, self.sections["HitObjects"])
         return self
@@ -169,6 +175,7 @@ class Beatmap:
         slider_points = [
             x, # Object position
             y, # Object position
+            time, # Object time
             type, # Slider Type
             slides, # Slider total back and forth
             length, # Slider length
@@ -196,9 +203,9 @@ class Beatmap:
 
             if hit_object.type == HitObjects._Type.SLIDER:
                 for x, y in hit_object.object_params.points:
-                    slider_points.append([x, y, hit_object.object_params.type.value, hit_object.object_params.slides, hit_object.object_params.length])
+                    slider_points.append([x, y, hit_object.time, hit_object.object_params.type.value, hit_object.object_params.slides, hit_object.object_params.length])
             else:
-                slider_points.append([0, 0, 0, 0, 0])
+                slider_points.append([0, 0, 0, 0, 0, 0])
             hit_objects.append(data)
         
         return map_info, hit_objects, slider_points

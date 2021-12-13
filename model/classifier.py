@@ -72,8 +72,13 @@ class OsuClassifier(nn.Module):
     """ Classifier for osu! beatmaps """
     def __init__(self, map_info_features: int, hit_objects_features: int, slider_points_features: int,
                 num_classes: int, hidden_size: int=256, key_size: int=32, value_size: int=32, n_layers: int=2, 
-                attn_n_layers: int=2, bidirectional: bool=False, dropout: float=0.5) -> None:
+                attn_n_layers: int=2, n_heads: int=2, bidirectional: bool=False, dropout: float=0.5) -> None:
         super(OsuClassifier, self).__init__()
+
+        # Make sure the hidden size is divisible by n_heads * key_size and value_size
+        assert hidden_size % (n_heads * key_size) == 0
+        assert hidden_size % (n_heads * value_size) == 0
+
         self.map_info_features = map_info_features
         self.hit_objects_features = hit_objects_features
         self.slider_points_features = slider_points_features
@@ -83,9 +88,9 @@ class OsuClassifier(nn.Module):
         self.value_size = value_size
         self.n_layers = n_layers
         self.attn_n_layers = attn_n_layers
+        self.n_heads = n_heads
         self.bidirectional = bidirectional
         self.dropout = dropout
-        self.n_heads = 2
 
         # Attention Mechanism
         self.ho_attn_stack = nn.ModuleList([
@@ -97,7 +102,6 @@ class OsuClassifier(nn.Module):
                 dropout=self.dropout
             ) for _ in range(self.attn_n_layers)
         ])
-        self.ho_attn_w = nn.Parameter(torch.randn(1, self.hidden_size, 1))
         self.sp_attn_stack = nn.ModuleList([
             MultiHeadAttention(
                 self.n_heads,
@@ -107,7 +111,6 @@ class OsuClassifier(nn.Module):
                 dropout=self.dropout
             ) for _ in range(self.attn_n_layers)
         ])
-        self.sp_attn_w = nn.Parameter(torch.randn(1, self.hidden_size, 1))
 
         # RNN Layers
         self.hit_objects_rnn = nn.GRU(
@@ -128,8 +131,6 @@ class OsuClassifier(nn.Module):
         )
 
         # FC Layers
-        self.hit_objects_fc = nn.Linear(self.hidden_size, self.hidden_size)
-        self.slider_points_fc = nn.Linear(self.hidden_size, self.hidden_size)
         self.intermediate_fc = nn.Linear(self.map_info_features+self.hidden_size*2, self.hidden_size)
         self.out = nn.Linear(self.hidden_size, self.num_classes)
 
@@ -138,23 +139,7 @@ class OsuClassifier(nn.Module):
         self.norm2 = nn.LayerNorm(self.hidden_size)
         self.norm3 = nn.LayerNorm(self.hidden_size)
     
-    def self_attention(self, x, w):
-        direction = 2 if self.bidirectional else 1
-        batch_size, _, _ = x.size()
-
-        # Transform the input
-        x = x.view(batch_size, -1, direction, self.hidden_size)
-        x = x.sum(dim=2)
-
-        # Apply the attention weight
-        attn = torch.bmm(torch.tanh(x), w.repeat(batch_size, 1, 1))
-        attn = F.softmax(attn, dim=1)
-        attn = torch.bmm(x.transpose(1, 2), attn).squeeze(2)
-        return torch.tanh(attn)
-    
     def forward(self, map_info, hit_objects, slider_points, seq_ho, seq_sp, return_attn=False):
-        batch_size = hit_objects.size(0)
-
         # Hit Objects
         # Pack the padded hit objects
         hit_objects = nn.utils.rnn.pack_padded_sequence(
@@ -188,10 +173,10 @@ class OsuClassifier(nn.Module):
             slider_points, _ = sp_layer(slider_points, slider_points, slider_points)
 
         # Forward pass through the FC layers
-        hit_objects = self.norm1(F.relu(self.hit_objects_fc(hit_objects).mean(dim=1)))
-        slider_points = self.norm2(F.relu(self.slider_points_fc(slider_points).mean(dim=1)))
+        hit_objects = self.norm1(hit_objects.sum(dim=1))
+        slider_points = self.norm2(slider_points.sum(dim=1))
 
-        # # Concatenate the map info and the RNN outputs
+        # Concatenate the map info and the RNN outputs
         out = torch.cat((map_info, hit_objects, slider_points), dim=1)
         out = self.norm3(F.relu(self.intermediate_fc(out)))
 

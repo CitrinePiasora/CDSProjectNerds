@@ -1,4 +1,3 @@
-import time
 import torch
 import humanize
 from pathlib import Path
@@ -6,17 +5,23 @@ from aiofiles import tempfile
 from datetime import datetime
 from starlette.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import (
     FastAPI, 
     File, 
     UploadFile, 
-    Request as FastAPIRequest, 
-    Response as FastAPIResponse,
+    Request as FastAPIRequest
 )
 
 from const import *
 from model.api import Response
-from model.exceptions import InvalidFileTypeException, InvalidFileException
+from model.exceptions import (
+    InvalidFileTypeException, 
+    InvalidFileException,
+    BeatmapTooLongException,
+    BeatmapUnsupportedException,
+)
 from model.classifier import OsuClassifier
 from utils.beatmap import Beatmap
 from utils.predict import predict_map_type
@@ -51,6 +56,13 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url=None,
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Classification Model
 classification_model = OsuClassifier(
@@ -63,6 +75,7 @@ classification_model = OsuClassifier(
     value_size=VALUE_SIZE,
     n_layers=N_LAYERS,
     attn_n_layers=ATTN_N_LAYERS,
+    n_heads=N_HEADS,
     bidirectional=BIDIRECTIONAL,
     dropout=DROPOUT
 )
@@ -82,21 +95,25 @@ async def invalid_file_handler(request: FastAPIRequest, exc: InvalidFileExceptio
         status_code=400,
         content=jsonable_encoder(Response(code=APIStatusCode.INVALID_FILE, message="Invalid file. File might be corrupted or not an osu beatmap file."))
     )
+@app.exception_handler(BeatmapTooLongException)
+async def beatmap_too_long_handler(request: FastAPIRequest, exc: BeatmapTooLongException):
+    return JSONResponse(
+        status_code=400,
+        content=jsonable_encoder(Response(code=APIStatusCode.BEATMAP_TOO_LONG, message="Beatmap is too long. To reduce memory usage, beatmaps are limited to only under 3000 hit objects."))
+    )
+@app.exception_handler(BeatmapUnsupportedException)
+async def beatmap_unsupported_handler(request: FastAPIRequest, exc: BeatmapUnsupportedException):
+    return JSONResponse(
+        status_code=400,
+        content=jsonable_encoder(Response(code=APIStatusCode.BEATMAP_UNSUPPORTED, message="Beatmap is not supported. Currently, only file format v12+ is supported!"))
+    )
 
-# Routes
+# API Routes
 @app.get("/", tags=["beatmaps"], response_model=Response)
 async def root():
     return Response(
         code=APIStatusCode.SUCCESS,
         message="Welcome to OsuClassy API!",
-    )
-
-@app.get("/gib_cookie", response_model=Response)
-async def cookie_test(response: FastAPIResponse):
-    response.set_cookie(key="osuclassy_sid", value="some-random-generated-cookie")
-    return Response(
-        code=APIStatusCode.SUCCESS,
-        message="Cookie set!",
     )
 
 @app.post("/predict", tags=["predict"], response_model=Response)
@@ -127,13 +144,19 @@ async def predict_map(file: UploadFile=File(...)):
         start = datetime.now()
         # Parse and predict the beatmap
         bm = await Beatmap.create(f)
+        print(f"Predicting beatmap (id={bm.sections['Metadata']['BeatmapID']}, set={bm.sections['Metadata']['BeatmapSetID']})...")
+        if len(bm.sections["HitObjects"]) >= 3000:
+            print("Beatmap too long!")
+            raise BeatmapTooLongException()
         map_type = await predict_map_type(classification_model, bm)
+        end = humanize.precisedelta(datetime.now() - start)
+        print(f"Done in {end}!")
 
     return Response(
         code=APIStatusCode.SUCCESS,
         message="Successfully predicted beatmap type!",
         data={
-            "processing_time": humanize.precisedelta(datetime.now() - start),
+            "processing_time": end,
             "beatmap_id": bm.sections["Metadata"]["BeatmapID"],
             "beatmap_set_id": bm.sections["Metadata"]["BeatmapSetID"],
             "artist": bm.sections["Metadata"]["Artist"],
@@ -142,4 +165,11 @@ async def predict_map(file: UploadFile=File(...)):
             "version": bm.sections["Metadata"]["Version"],
             "predicted_type": map_type,
         }
+    )
+
+@app.get("/docs", include_in_schema=False)
+async def custom_docs_html():
+    return get_swagger_ui_html(
+        openapi_url="/api/openapi.json",
+        title=app.title,
     )

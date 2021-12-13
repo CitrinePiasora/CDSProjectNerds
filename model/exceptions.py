@@ -3,3 +3,9 @@ class InvalidFileException(Exception):
 
 class InvalidFileTypeException(Exception):
     pass
+
+class BeatmapTooLongException(Exception):
+    pass
+
+class BeatmapUnsupportedException(Exception):
+    pass
