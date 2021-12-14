@@ -171,7 +171,7 @@ async def predict_map(file: UploadFile = File(...)):
     """
     if Path(file.filename).suffix != ".osu":
         print("Invalid file extension!")
-        raise InvalidFileException()
+        raise InvalidFileTypeException()
     async with tempfile.TemporaryFile(mode="w+") as f:
         content = await file.read()
         # Decode and remove carriage return for beatmap saved on windows
