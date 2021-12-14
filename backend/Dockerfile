@@ -18,6 +18,8 @@ ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
 # Upgrade pip
 RUN python -m pip install --upgrade pip
 # Copy requirements.txt to /app directory
+# Copying only the requirements.txt so that
+# the dependencies can be cached
 ADD requirements.txt /app/requirements.txt
 # Install python dependencies
 RUN pip install -r requirements.txt
