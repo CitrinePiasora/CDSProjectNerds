@@ -20,6 +20,21 @@ spec:
           imagePullPolicy: Never # Will error out if not set, because the image is build locally
           ports:
             - containerPort: 8000
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: database-url
+            - name: DB_NAME
+              value: osuclassy
+            - name: DB_USER
+              value: osuclassy
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: postgres-password
 ---
 apiVersion: v1
 kind: Service

@@ -11,7 +11,7 @@ from fastapi import FastAPI, File, UploadFile, Request as FastAPIRequest
 
 from const import *
 from model.api import (
-    Response,
+    DefaultResponse,
     ExceptionResponse,
 )
 from model.exceptions import (
@@ -23,6 +23,8 @@ from model.exceptions import (
 from model.classifier import OsuClassifier
 from utils.beatmap import Beatmap
 from utils.predict import predict_map_type
+from config.db import engine, async_session
+from model.db import Beatmap as BeatmapDB, BeatmapDAL as BeatmapDBDAL
 
 
 # API init
@@ -87,6 +89,15 @@ classification_model.load_state_dict(
     )
 )
 
+# Startup
+@app.on_event("startup")
+async def startup():
+    # create db tables
+    async with engine.begin() as conn:
+        await conn.run_sync(BeatmapDB.metadata.drop_all)
+        await conn.run_sync(BeatmapDB.metadata.create_all)
+
+
 # Exceptions Handler
 @app.exception_handler(InvalidFileTypeException)
 async def invalid_file_handler(request: FastAPIRequest, exc: InvalidFileTypeException):
@@ -145,18 +156,65 @@ async def beatmap_unsupported_handler(
 
 
 # API Routes
-@app.get("/", tags=["beatmaps"], response_model=Response)
+@app.get("/", response_model=DefaultResponse, include_in_schema=False)
 async def root():
-    return Response(
+    return DefaultResponse(
         code=APIStatusCode.SUCCESS,
         message="Welcome to OsuClassy API!",
     )
 
 
+@app.get("/beatmaps", tags=["beatmaps"], response_model=DefaultResponse)
+async def get_all_beatmaps(limit: int = 10, page: int = 1):
+    """
+    Get all beatmaps.
+
+    - **limit**: Number of beatmaps to return.
+    - **page**: Page number.
+    """
+    # Clamp the value to be between 1 and 25
+    limit = min(max(limit, 1), 25)
+    # If value is negative, return the first page
+    offset = min((limit - 1) * page, 0)
+    async with async_session() as session:
+        async with session.begin():
+            beatmaps = await BeatmapDBDAL(session).get_all_beatmaps(limit, offset)
+            return DefaultResponse(
+                code=APIStatusCode.SUCCESS,
+                message="Successfully retrieved all beatmaps!",
+                data={"beatmaps": beatmaps},
+            )
+
+
+@app.get(
+    "/beatmaps/{beatmapset_id}/{beatmap_id}",
+    tags=["beatmaps"],
+    response_model=DefaultResponse,
+)
+async def get_beatmap(beatmapset_id: int, beatmap_id: int):
+    """
+    Get a specific beatmap.
+
+    - **beatmap_id**: Beatmap ID.
+    """
+    async with async_session() as session:
+        async with session.begin():
+            beatmap = await BeatmapDBDAL(session).get_beatmap_by_id(
+                beatmapset_id, beatmap_id
+            )
+            return DefaultResponse(
+                code=APIStatusCode.SUCCESS,
+                message="Successfully retrieved beatmap!"
+                if beatmap
+                else "Beatmap not found!",
+                data={"beatmap": beatmap},
+            )
+
+
 @app.post(
     "/predict",
     tags=["predict"],
-    response_model=Response,
+    response_model=DefaultResponse,
     responses={
         400: {"model": ExceptionResponse},
     },
@@ -166,8 +224,6 @@ async def predict_map(file: UploadFile = File(...)):
     Predict beatmap class.
 
     - **file**: .osu file to predict.
-    \f
-    :param file: Uploaded file.
     """
     if Path(file.filename).suffix != ".osu":
         print("Invalid file extension!")
@@ -188,17 +244,31 @@ async def predict_map(file: UploadFile = File(...)):
         start = datetime.now()
         # Parse and predict the beatmap
         bm = await Beatmap.create(f)
-        print(
-            f"Predicting beatmap (id={bm.sections['Metadata']['BeatmapID']}, set={bm.sections['Metadata']['BeatmapSetID']})..."
-        )
-        if len(bm.sections["HitObjects"]) >= 3000:
-            print("Beatmap too long!")
-            raise BeatmapTooLongException()
-        map_type = await predict_map_type(classification_model, bm)
-        end = humanize.precisedelta(datetime.now() - start)
-        print(f"Done in {end}!")
 
-    return Response(
+    print(
+        f"Predicting beatmap (id={bm.sections['Metadata']['BeatmapID']}, set={bm.sections['Metadata']['BeatmapSetID']})..."
+    )
+    if len(bm.sections["HitObjects"]) >= 3000:
+        print("Beatmap too long!")
+        raise BeatmapTooLongException()
+    map_type = await predict_map_type(classification_model, bm)
+    end = humanize.precisedelta(datetime.now() - start)
+    print(f"Done in {end}!")
+
+    # Create a new beatmap database entry
+    async with async_session() as session:
+        async with session.begin():
+            await BeatmapDBDAL(session).create_or_update_beatmap(
+                bm.sections["Metadata"]["BeatmapID"],
+                bm.sections["Metadata"]["BeatmapSetID"],
+                bm.sections["Metadata"]["Artist"],
+                bm.sections["Metadata"]["Title"],
+                bm.sections["Metadata"]["Creator"],
+                bm.sections["Metadata"]["Version"],
+                **map_type,
+            )
+
+    return DefaultResponse(
         code=APIStatusCode.SUCCESS,
         message="Successfully predicted beatmap type!",
         data={

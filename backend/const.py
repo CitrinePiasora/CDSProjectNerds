@@ -1,3 +1,5 @@
+import os
+
 # Dataset labels
 LABELS = ["alternate", "fingercontrol", "jump", "speed", "stamina", "stream", "tech"]
 
@@ -71,6 +73,10 @@ ATTN_N_LAYERS = 2
 N_HEADS = 2
 BIDIRECTIONAL = False
 DROPOUT = 0.5
+
+
+# Database
+DATABASE_URL = f"postgresql+asyncpg://{os.environ['DB_USER']}:{os.environ['DB_PASS']}@{os.environ['DB_HOST']}/{os.environ['DB_NAME']}"
 
 
 # API Status Code
