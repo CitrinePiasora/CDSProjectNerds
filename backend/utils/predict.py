@@ -10,7 +10,9 @@ from model.classifier import OsuClassifier
 from const import HIT_OBJECTS_FEATURES, SLIDER_POINTS_FEATURES, LABELS
 
 
-async def predict_map_type(model: OsuClassifier, beatmap: Beatmap) -> List[Tuple[str, float]]:
+async def predict_map_type(
+    model: OsuClassifier, beatmap: Beatmap
+) -> List[Tuple[str, float]]:
     """
     Predict the map type of a beatmap.
     """
@@ -25,7 +27,9 @@ async def predict_map_type(model: OsuClassifier, beatmap: Beatmap) -> List[Tuple
     seq_sp = [slider_points.shape[0]]
 
     ## Standardize the data
-    map_info, hit_objects, slider_points = data.standardize(map_info, hit_objects, slider_points)
+    map_info, hit_objects, slider_points = data.standardize(
+        map_info, hit_objects, slider_points
+    )
 
     ## Reshape the data to (N, L, features), where N is the batch and L is sequence length
     hit_objects = hit_objects.reshape(1, -1, HIT_OBJECTS_FEATURES)

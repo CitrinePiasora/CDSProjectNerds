@@ -4,7 +4,8 @@ from torch.nn import functional as F
 
 
 class ScaledDotProductAttention(nn.Module):
-    """ Scaled Dot-Product Attention """
+    """Scaled Dot-Product Attention"""
+
     def __init__(self, temperature, attn_dropout=0.1):
         super().__init__()
         self.temperature = temperature
@@ -22,8 +23,15 @@ class MultiHeadAttention(nn.Module):
     Self-Attention mechanism for the RNN.
     https://arxiv.org/abs/1706.03762
     """
-    def __init__(self, n_heads: int, hidden_size: int=256, key_size: int=32,
-                value_size: int=32, dropout: float=0.5) -> None:
+
+    def __init__(
+        self,
+        n_heads: int,
+        hidden_size: int = 256,
+        key_size: int = 32,
+        value_size: int = 32,
+        dropout: float = 0.5,
+    ) -> None:
         super().__init__()
         assert hidden_size % n_heads == 0
         self.n_heads = n_heads
@@ -56,20 +64,33 @@ class MultiHeadAttention(nn.Module):
 
         # Attention
         q, attn = self.attn(q, k, v)
-        
+
         # Transpose to move the head dimension back
         q = q.transpose(1, 2).contiguous().view(batch_size, len_q, -1)
         q = self.dropout(self.fc(q))
         q = self.norm(residual + q)
-        
+
         return q, attn
 
 
 class OsuClassifier(nn.Module):
-    """ Classifier for osu! beatmaps """
-    def __init__(self, map_info_features: int, hit_objects_features: int, slider_points_features: int,
-                num_classes: int, hidden_size: int=256, key_size: int=32, value_size: int=32, n_layers: int=2, 
-                attn_n_layers: int=2, n_heads: int=2, bidirectional: bool=False, dropout: float=0.5) -> None:
+    """Classifier for osu! beatmaps"""
+
+    def __init__(
+        self,
+        map_info_features: int,
+        hit_objects_features: int,
+        slider_points_features: int,
+        num_classes: int,
+        hidden_size: int = 256,
+        key_size: int = 32,
+        value_size: int = 32,
+        n_layers: int = 2,
+        attn_n_layers: int = 2,
+        n_heads: int = 2,
+        bidirectional: bool = False,
+        dropout: float = 0.5,
+    ) -> None:
         super(OsuClassifier, self).__init__()
 
         # Make sure the hidden size is divisible by n_heads * key_size and value_size
@@ -90,24 +111,30 @@ class OsuClassifier(nn.Module):
         self.dropout = dropout
 
         # Attention Mechanism
-        self.ho_attn_stack = nn.ModuleList([
-            MultiHeadAttention(
-                self.n_heads, 
-                hidden_size=self.hidden_size, 
-                key_size=self.key_size,
-                value_size=self.value_size,
-                dropout=self.dropout
-            ) for _ in range(self.attn_n_layers)
-        ])
-        self.sp_attn_stack = nn.ModuleList([
-            MultiHeadAttention(
-                self.n_heads,
-                hidden_size=self.hidden_size,
-                key_size=self.key_size,
-                value_size=self.value_size,
-                dropout=self.dropout
-            ) for _ in range(self.attn_n_layers)
-        ])
+        self.ho_attn_stack = nn.ModuleList(
+            [
+                MultiHeadAttention(
+                    self.n_heads,
+                    hidden_size=self.hidden_size,
+                    key_size=self.key_size,
+                    value_size=self.value_size,
+                    dropout=self.dropout,
+                )
+                for _ in range(self.attn_n_layers)
+            ]
+        )
+        self.sp_attn_stack = nn.ModuleList(
+            [
+                MultiHeadAttention(
+                    self.n_heads,
+                    hidden_size=self.hidden_size,
+                    key_size=self.key_size,
+                    value_size=self.value_size,
+                    dropout=self.dropout,
+                )
+                for _ in range(self.attn_n_layers)
+            ]
+        )
 
         # RNN Layers
         self.hit_objects_rnn = nn.GRU(
@@ -116,7 +143,7 @@ class OsuClassifier(nn.Module):
             num_layers=self.n_layers,
             bidirectional=self.bidirectional,
             dropout=self.dropout,
-            batch_first=True
+            batch_first=True,
         )
         self.slider_points_rnn = nn.GRU(
             input_size=self.slider_points_features,
@@ -124,37 +151,37 @@ class OsuClassifier(nn.Module):
             num_layers=self.n_layers,
             bidirectional=self.bidirectional,
             dropout=self.dropout,
-            batch_first=True
+            batch_first=True,
         )
 
         # FC Layers
-        self.intermediate_fc = nn.Linear(self.map_info_features+self.hidden_size*2, self.hidden_size)
+        self.intermediate_fc = nn.Linear(
+            self.map_info_features + self.hidden_size * 2, self.hidden_size
+        )
         self.out = nn.Linear(self.hidden_size, self.num_classes)
 
         # Regularization Layers
         self.norm1 = nn.LayerNorm(self.hidden_size)
         self.norm2 = nn.LayerNorm(self.hidden_size)
         self.norm3 = nn.LayerNorm(self.hidden_size)
-    
-    def forward(self, map_info, hit_objects, slider_points, seq_ho, seq_sp, return_attn=False):
+
+    def forward(
+        self, map_info, hit_objects, slider_points, seq_ho, seq_sp, return_attn=False
+    ):
         # Hit Objects
         # Pack the padded hit objects
         hit_objects = nn.utils.rnn.pack_padded_sequence(
-            hit_objects, seq_ho,
-            batch_first=True, enforce_sorted=False
+            hit_objects, seq_ho, batch_first=True, enforce_sorted=False
         )
         # Forward pass through the RNN
         hit_objects, _ = self.hit_objects_rnn(hit_objects)
         # Unpack the output
-        hit_objects, _ = nn.utils.rnn.pad_packed_sequence(
-            hit_objects, batch_first=True
-        )
+        hit_objects, _ = nn.utils.rnn.pad_packed_sequence(hit_objects, batch_first=True)
 
         # Slider Points
         # Pack the padded slider points
         slider_points = nn.utils.rnn.pack_padded_sequence(
-            slider_points, seq_sp,
-            batch_first=True, enforce_sorted=False
+            slider_points, seq_sp, batch_first=True, enforce_sorted=False
         )
         # Forward pass through the RNN
         slider_points, _ = self.slider_points_rnn(slider_points)

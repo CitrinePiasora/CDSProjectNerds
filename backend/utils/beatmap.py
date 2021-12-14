@@ -35,10 +35,12 @@ class HitObjects:
     """
     Stores data for each hit object.
     """
+
     class _Type(enum.Enum):
         """
         Enum for the different types of hit objects.
         """
+
         CIRCLE = 0
         SLIDER = 1
         SPINNER = 2
@@ -48,10 +50,12 @@ class HitObjects:
         """
         Stores the slider parameters.
         """
+
         class _Type(enum.Enum):
             """
             The type of slider.
             """
+
             LINEAR = 0
             BEZIER = 1
             CATMULL = 2
@@ -94,15 +98,24 @@ class HitObjects:
         """
         Stores the spinner parameters.
         """
+
         def __init__(self, time, params) -> None:
             self.t_length = params - time
 
-    def __init__(self, x: int, y: int, time: int, _type: int, 
-                 hitSound: int, objectParams: str="", *args) -> None:
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        time: int,
+        _type: int,
+        hitSound: int,
+        objectParams: str = "",
+        *args,
+    ) -> None:
         self.x = x
         self.y = y
         self.time = time
-        self.new_combo = False       
+        self.new_combo = False
         self.type = self.getType(_type)
         self.hitSound = hitSound
         self.object_params = None
@@ -117,7 +130,7 @@ class HitObjects:
         """
         if _type & (1 << 2) != 0:
             self.new_combo = True
-        
+
         if _type & (1 << 0) != 0:
             return self._Type.CIRCLE
         elif _type & (1 << 1) != 0:
@@ -188,7 +201,7 @@ class Beatmap:
             self.sections["Difficulty"]["ApproachRate"],
             self.sections["Difficulty"]["SliderMultiplier"],
             self.sections["Difficulty"]["SliderTickRate"],
-            self.sections["HitObjects"][-1].time
+            self.sections["HitObjects"][-1].time,
         ]
         hit_objects = []
         slider_points = []
@@ -198,16 +211,25 @@ class Beatmap:
                 hit_object.y,
                 hit_object.time,
                 hit_object.type.value,
-                int(hit_object.new_combo)
+                int(hit_object.new_combo),
             ]
 
             if hit_object.type == HitObjects._Type.SLIDER:
                 for x, y in hit_object.object_params.points:
-                    slider_points.append([x, y, hit_object.time, hit_object.object_params.type.value, hit_object.object_params.slides, hit_object.object_params.length])
+                    slider_points.append(
+                        [
+                            x,
+                            y,
+                            hit_object.time,
+                            hit_object.object_params.type.value,
+                            hit_object.object_params.slides,
+                            hit_object.object_params.length,
+                        ]
+                    )
             else:
                 slider_points.append([0, 0, 0, 0, 0, 0])
             hit_objects.append(data)
-        
+
         return map_info, hit_objects, slider_points
 
     async def parse_sections(self):
@@ -217,7 +239,6 @@ class Beatmap:
         async for section in self._parse_section_header():
             func = f"_read_type_{_SECTION_TYPES[section]}_section"
             self.sections[section] = await getattr(self, func)()
-        
 
     async def _parse_section_header(self) -> AsyncGenerator[str, None]:
         """
@@ -252,7 +273,7 @@ class Beatmap:
             d[k] = self._parse_value(v.strip())
             line = await self.file_object.readline()
             line = line.rstrip()
-        
+
         return d
 
     async def _read_type_b_section(self) -> List:

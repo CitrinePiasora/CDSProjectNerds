@@ -7,12 +7,7 @@ from starlette.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import (
-    FastAPI, 
-    File, 
-    UploadFile, 
-    Request as FastAPIRequest
-)
+from fastapi import FastAPI, File, UploadFile, Request as FastAPIRequest
 
 from const import *
 from model.api import (
@@ -20,7 +15,7 @@ from model.api import (
     ExceptionResponse,
 )
 from model.exceptions import (
-    InvalidFileTypeException, 
+    InvalidFileTypeException,
     InvalidFileException,
     BeatmapTooLongException,
     BeatmapUnsupportedException,
@@ -31,7 +26,9 @@ from utils.predict import predict_map_type
 
 
 # API init
-description = "OsuClassy is a beatmap classifier that uses machine learning to classify beatmaps."
+description = (
+    "OsuClassy is a beatmap classifier that uses machine learning to classify beatmaps."
+)
 tags_metadata = [
     {
         "name": "predict",
@@ -40,7 +37,7 @@ tags_metadata = [
     {
         "name": "beatmaps",
         "description": "Beatmap information, such as beatmap ID, title, creator, etc. Also includes the predictions!",
-    }
+    },
 ]
 app = FastAPI(
     title="OsuClassy",
@@ -80,36 +77,72 @@ classification_model = OsuClassifier(
     attn_n_layers=ATTN_N_LAYERS,
     n_heads=N_HEADS,
     bidirectional=BIDIRECTIONAL,
-    dropout=DROPOUT
+    dropout=DROPOUT,
 )
 classification_model.eval()
-classification_model.load_state_dict(torch.load("model/pretrained_weights/osuclasification_best.pt", map_location=torch.device("cpu")))
+classification_model.load_state_dict(
+    torch.load(
+        "model/pretrained_weights/osuclasification_best.pt",
+        map_location=torch.device("cpu"),
+    )
+)
 
 # Exceptions Handler
 @app.exception_handler(InvalidFileTypeException)
 async def invalid_file_handler(request: FastAPIRequest, exc: InvalidFileTypeException):
     return JSONResponse(
         status_code=400,
-        content=jsonable_encoder(ExceptionResponse(code=APIStatusCode.INVALID_FILE, reason="Invalid file type. Only .osu files are allowed."))
+        content=jsonable_encoder(
+            ExceptionResponse(
+                code=APIStatusCode.INVALID_FILE,
+                reason="Invalid file type. Only .osu files are allowed.",
+            )
+        ),
     )
+
+
 @app.exception_handler(InvalidFileException)
 async def invalid_file_handler(request: FastAPIRequest, exc: InvalidFileException):
     return JSONResponse(
         status_code=400,
-        content=jsonable_encoder(ExceptionResponse(code=APIStatusCode.INVALID_FILE, reason="Invalid file. File might be corrupted or not an osu beatmap file."))
+        content=jsonable_encoder(
+            ExceptionResponse(
+                code=APIStatusCode.INVALID_FILE,
+                reason="Invalid file. File might be corrupted or not an osu beatmap file.",
+            )
+        ),
     )
+
+
 @app.exception_handler(BeatmapTooLongException)
-async def beatmap_too_long_handler(request: FastAPIRequest, exc: BeatmapTooLongException):
+async def beatmap_too_long_handler(
+    request: FastAPIRequest, exc: BeatmapTooLongException
+):
     return JSONResponse(
         status_code=400,
-        content=jsonable_encoder(ExceptionResponse(code=APIStatusCode.BEATMAP_TOO_LONG, reason="Beatmap is too long. To reduce memory usage, beatmaps are limited to only under 3000 hit objects."))
+        content=jsonable_encoder(
+            ExceptionResponse(
+                code=APIStatusCode.BEATMAP_TOO_LONG,
+                reason="Beatmap is too long. To reduce memory usage, beatmaps are limited to only under 3000 hit objects.",
+            )
+        ),
     )
+
+
 @app.exception_handler(BeatmapUnsupportedException)
-async def beatmap_unsupported_handler(request: FastAPIRequest, exc: BeatmapUnsupportedException):
+async def beatmap_unsupported_handler(
+    request: FastAPIRequest, exc: BeatmapUnsupportedException
+):
     return JSONResponse(
         status_code=400,
-        content=jsonable_encoder(ExceptionResponse(code=APIStatusCode.BEATMAP_UNSUPPORTED, reason="Beatmap is not supported. Currently, only file format v12+ is supported!"))
+        content=jsonable_encoder(
+            ExceptionResponse(
+                code=APIStatusCode.BEATMAP_UNSUPPORTED,
+                reason="Beatmap is not supported. Currently, only file format v12+ is supported!",
+            )
+        ),
     )
+
 
 # API Routes
 @app.get("/", tags=["beatmaps"], response_model=Response)
@@ -119,14 +152,16 @@ async def root():
         message="Welcome to OsuClassy API!",
     )
 
-@app.post("/predict", 
-    tags=["predict"], 
+
+@app.post(
+    "/predict",
+    tags=["predict"],
     response_model=Response,
     responses={
         400: {"model": ExceptionResponse},
-    }
+    },
 )
-async def predict_map(file: UploadFile=File(...)):
+async def predict_map(file: UploadFile = File(...)):
     """
     Predict beatmap class.
 
@@ -153,7 +188,9 @@ async def predict_map(file: UploadFile=File(...)):
         start = datetime.now()
         # Parse and predict the beatmap
         bm = await Beatmap.create(f)
-        print(f"Predicting beatmap (id={bm.sections['Metadata']['BeatmapID']}, set={bm.sections['Metadata']['BeatmapSetID']})...")
+        print(
+            f"Predicting beatmap (id={bm.sections['Metadata']['BeatmapID']}, set={bm.sections['Metadata']['BeatmapSetID']})..."
+        )
         if len(bm.sections["HitObjects"]) >= 3000:
             print("Beatmap too long!")
             raise BeatmapTooLongException()
@@ -173,8 +210,9 @@ async def predict_map(file: UploadFile=File(...)):
             "creator": bm.sections["Metadata"]["Creator"],
             "version": bm.sections["Metadata"]["Version"],
             "predicted_type": map_type,
-        }
+        },
     )
+
 
 @app.get("/docs", include_in_schema=False)
 async def custom_docs_html():
