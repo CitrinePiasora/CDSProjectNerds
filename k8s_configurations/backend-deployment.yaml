@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: osu-classy-backend-deployment
+  name: osuclassy-backend-deployment
+  namespace: osuclassy-dev
   labels:
-    app: osu-classy-backend
+    app: osuclassy-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: osu-classy-backend
+      app: osuclassy-backend
   template:
     metadata:
       labels:
-        app: osu-classy-backend
+        app: osuclassy-backend
     spec:
       containers:
-        - name: osu-classy-backend
-          image: fauzanardh/osu-classy-backend
+        - name: osuclassy-backend
+          image: fauzanardh/osuclassy-backend
           imagePullPolicy: Never # Will error out if not set, because the image is build locally
           ports:
             - containerPort: 8000
@@ -39,13 +40,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: osu-classy-backend-service
+  name: osuclassy-backend-service
+  namespace: osuclassy-dev
 spec:
   selector:
-    app: osu-classy-backend
-  type: LoadBalancer
+    app: osuclassy-backend
   ports:
     - protocol: TCP
       port: 8000
       targetPort: 8000
-      nodePort: 30001

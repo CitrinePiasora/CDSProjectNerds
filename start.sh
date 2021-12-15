@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Create a new namespace
+kubectl create namespace osuclassy-dev
+
 # Database creation
 echo "Deploying database..."
 kubectl apply -f k8s_configurations/db-secret.yaml
