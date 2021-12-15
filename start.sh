@@ -13,4 +13,7 @@ kubectl apply -f k8s_configurations/db-deployment.yaml
 echo "Deploying the backend..."
 kubectl apply -f k8s_configurations/backend-deployment.yaml
 
+echo "Creating ingress..."
+kubectl apply -f k8s_configurations/osuclassy-ingress.yaml
+
 echo "Finished!"

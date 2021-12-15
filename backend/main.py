@@ -55,7 +55,8 @@ app = FastAPI(
         "url": "https://opensource.org/licenses/MIT",
     },
     openapi_tags=tags_metadata,
-    docs_url="/docs",
+    root_path="/api",
+    docs_url=None,
     redoc_url=None,
 )
 app.add_middleware(
@@ -65,6 +66,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Custom docs html
+@app.get("/docs", include_in_schema=False)
+async def custom_docs_html():
+    return get_swagger_ui_html(
+        openapi_url="/api/openapi.json",
+        title=f"{app.title} API",
+    )
+
 
 # Classification Model
 classification_model = OsuClassifier(
@@ -281,12 +291,4 @@ async def predict_map(file: UploadFile = File(...)):
             "version": bm.sections["Metadata"]["Version"],
             "predicted_type": map_type,
         },
-    )
-
-
-@app.get("/docs", include_in_schema=False)
-async def custom_docs_html():
-    return get_swagger_ui_html(
-        openapi_url="/api/openapi.json",
-        title=app.title,
     )
