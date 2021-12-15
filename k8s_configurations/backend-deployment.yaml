@@ -34,7 +34,7 @@ spec:
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
+                  name: db-secret
                   key: postgres-password
 ---
 apiVersion: v1
