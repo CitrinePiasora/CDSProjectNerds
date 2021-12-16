@@ -18,7 +18,6 @@ import {
   Button,
   MediaContainer,
   MediaOverlay,
-  CardTitle,
 } from 'react-md'
 
 import { Chart } from "react-google-charts"
@@ -31,7 +30,6 @@ import Alert from '../components/Alert'
 import Container from '../components/Container'
 import containerStyles from "../styles/Elevation.module.scss"
 import predictStyles from "../styles/Predict.module.scss"
-import { type } from 'os';
 import LinkUnstyled from '../components/LinkUnstyled';
 
 const MAX_FILE_SIZE = 5 * 1000 * 1000;
@@ -141,21 +139,18 @@ export default function Predict(): ReactElement {
                         <img
                           src={`https://assets.ppy.sh/beatmaps/${prediction.data.beatmap_set_id}/covers/cover.jpg`}
                           alt="Beatmap cover"
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                         <MediaOverlay className={cn(predictStyles.overlay)}>
-                          <CardTitle>
-                            <Typography type="headline-2" ref={ref} style={{ fontSize, marginTop: 0, marginBottom: 0 }}>{prediction.data.title}</Typography>
-                            <Typography type="headline-6" style={{ marginTop: 0, marginBottom: 0 }}>{prediction.data.artist}</Typography>
-                            <Typography type="subtitle-2">Mapped by {prediction.data.creator}</Typography>
-                          </CardTitle>
+                          <Typography type="headline-3" className={cn(predictStyles.text)}>{prediction.data.title}</Typography>
+                          <Typography type="headline-6" className={cn(predictStyles.text)}>{prediction.data.artist}</Typography>
+                          <Typography type="subtitle-2">Mapped by {prediction.data.creator}</Typography>
                         </MediaOverlay>
                       </MediaContainer>
                       <CardContent>
                         <Button theme="secondary" themeType="outline">
                           <LinkUnstyled
                             href={`https://osu.ppy.sh/beatmapsets/${prediction.data.beatmap_set_id}#osu/${prediction.data.beatmap_id}`}
-                            style={{ textDecoration: "none", color: "inherit" }}
+                            className={cn(predictStyles.link)}
                           >
                             Visit Beatmap
                           </LinkUnstyled>
