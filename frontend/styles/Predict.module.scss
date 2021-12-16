@@ -1,0 +1,38 @@
+.chart { 
+    width: 48%;
+    margin-left: 1rem;
+    margin-right: auto;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.cover {
+    width: 48%;
+    height: 300px;
+    margin-left: auto;
+    margin-right: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    text-align: right;
+
+    .card {
+        width: 100%;
+        height: 100%;
+        
+        .media-container {
+            width: 100%;
+            height: 75%;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .overlay {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+}
