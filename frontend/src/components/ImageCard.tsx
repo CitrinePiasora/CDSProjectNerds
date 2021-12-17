@@ -48,7 +48,7 @@ export default function BeatmapInfo({
             <Text fontSize={"sm"} color={textColor}>
               [{version}]
             </Text>
-            <Text color={textColor}>{artist}</Text>
+            <Text color={textColor}>by {artist}</Text>
             <Text fontWeight={600}>Mapped by {mappedBy}</Text>
           </Stack>
 

@@ -4,6 +4,7 @@ import {
   Box,
   Center,
   Heading,
+  Link,
   Spinner,
   Stack,
   Text,
@@ -151,9 +152,15 @@ const Predict = () => {
         inference, so performance might be slow.
       </Alert>
       <Box py={10} px={5}>
-        <Heading fontSize="6xl">Predict osu! Beatmap</Heading>
-        <Text fontSize={"2xl"}>
-          Predict the type of beatmap by uploading the beatmap!
+        <Heading fontSize="6xl" textAlign={"center"}>
+          Predict{" "}
+          <Link href="https://osu.ppy.sh/" color={mainColor}>
+            osu!
+          </Link>{" "}
+          Beatmap
+        </Heading>
+        <Text fontSize={"xl"} textAlign={"center"}>
+          Predict the type of beatmap by uploading it!
         </Text>
       </Box>
       <Box
