@@ -21,6 +21,7 @@ class Beatmap(BaseModel):
     stream_p: float
     tech_p: float
 
+    view_count: int
     created_at: datetime
     updated_at: datetime
 

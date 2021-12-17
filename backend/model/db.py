@@ -37,6 +37,8 @@ class Beatmap(Base):
     stream_p = Column(Float, nullable=False)
     tech_p = Column(Float, nullable=False)
 
+    # Stats
+    view_count = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -80,25 +82,26 @@ class BeatmapDAL:
         :param stream: Stream class probability
         :param tech: Tech class probability
         """
-        new_beatmap = Beatmap(
-            beatmap_id=beatmap_id,
-            beatmapset_id=beatmapset_id,
-            artist=artist,
-            title=title,
-            creator=creator,
-            version=version,
-            alternate_p=alternate,
-            fingercontrol_p=fingercontrol,
-            jump_p=jump,
-            speed_p=speed,
-            stamina_p=stamina,
-            stream_p=stream,
-            tech_p=tech,
-        )
         q = await self.db_session.execute(
             select(Beatmap).where(Beatmap.beatmap_id == beatmap_id)
         )
         if q.scalar() is None:
+            new_beatmap = Beatmap(
+                beatmap_id=beatmap_id,
+                beatmapset_id=beatmapset_id,
+                artist=artist,
+                title=title,
+                creator=creator,
+                version=version,
+                alternate_p=alternate,
+                fingercontrol_p=fingercontrol,
+                jump_p=jump,
+                speed_p=speed,
+                stamina_p=stamina,
+                stream_p=stream,
+                tech_p=tech,
+                view_count=0,
+            )
             self.db_session.add(new_beatmap)
             await self.db_session.commit()
         else:
@@ -116,9 +119,9 @@ class BeatmapDAL:
                 )
             )
 
-    async def get_all_beatmaps(self, limit, offset) -> List[Beatmap]:
+    async def get_beatmaps(self, limit, offset) -> List[Beatmap]:
         """
-        Get all beatmaps
+        Get beatmaps sorted by most recently updated
         :return: List of all beatmaps
         """
         q = await self.db_session.execute(
@@ -129,7 +132,46 @@ class BeatmapDAL:
         )
         return q.scalars().all()
 
-    async def get_beatmap_by_id(self, beatmapset_id: int, beatmap_id: int) -> Beatmap:
+    async def get_beatmaps_recent(self, limit, offset) -> List[Beatmap]:
+        """
+        Get beatmaps that are recently created
+        :return: List of all beatmaps
+        """
+        q = await self.db_session.execute(
+            select(Beatmap)
+            .order_by(desc(Beatmap.created_at))
+            .offset(offset)
+            .limit(limit)
+        )
+        return q.scalars().all()
+
+    async def get_beatmaps_popular(self, limit, offset) -> List[Beatmap]:
+        """
+        Get popular beatmaps
+        :return: List of all beatmaps
+        """
+        q = await self.db_session.execute(
+            select(Beatmap)
+            .order_by(desc(Beatmap.view_count))
+            .offset(offset)
+            .limit(limit)
+        )
+        return q.scalars().all()
+
+    async def get_beatmap_by_set(self, beatmapset_id: int) -> List[Beatmap]:
+        """
+        Get a beatmap by ID
+        :param beatmap_id: Beatmap ID
+        :return: Beatmap
+        """
+        q = await self.db_session.execute(
+            select(Beatmap).where(Beatmap.beatmapset_id == beatmapset_id)
+        )
+        return q.scalars().all()
+
+    async def get_beatmap_by_set_and_id(
+        self, beatmapset_id: int, beatmap_id: int
+    ) -> Beatmap:
         """
         Get a beatmap by ID
         :param beatmap_id: Beatmap ID
@@ -140,4 +182,12 @@ class BeatmapDAL:
                 Beatmap.beatmapset_id == beatmapset_id, Beatmap.beatmap_id == beatmap_id
             )
         )
-        return q.scalar()
+        beatmap = q.scalar()
+        await self.db_session.execute(
+            update(Beatmap)
+            .where(
+                Beatmap.beatmapset_id == beatmapset_id, Beatmap.beatmap_id == beatmap_id
+            )
+            .values(view_count=beatmap.view_count + 1)
+        )
+        return beatmap

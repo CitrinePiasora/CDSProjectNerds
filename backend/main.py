@@ -175,9 +175,9 @@ async def root():
 
 
 @app.get("/beatmaps", tags=["beatmaps"], response_model=DefaultResponse)
-async def get_all_beatmaps(limit: int = 10, page: int = 1):
+async def get_beatmaps(limit: int = 10, page: int = 1):
     """
-    Get all beatmaps.
+    Get recently updated beatmaps.
 
     - **limit**: Number of beatmaps to return.
     - **page**: Page number.
@@ -188,10 +188,77 @@ async def get_all_beatmaps(limit: int = 10, page: int = 1):
     offset = min((limit - 1) * page, 0)
     async with async_session() as session:
         async with session.begin():
-            beatmaps = await BeatmapDBDAL(session).get_all_beatmaps(limit, offset)
+            beatmaps = await BeatmapDBDAL(session).get_beatmaps(limit, offset)
             return DefaultResponse(
                 code=APIStatusCode.SUCCESS,
                 message="Successfully retrieved all beatmaps!",
+                data={"beatmaps": beatmaps},
+            )
+
+
+@app.get("/beatmaps/recent", tags=["beatmaps"], response_model=DefaultResponse)
+async def get_beatmaps_recent(limit: int = 10, page: int = 1):
+    """
+    Get recently created beatmaps.
+
+    - **limit**: Number of beatmaps to return.
+    - **page**: Page number.
+    """
+    # Clamp the value to be between 1 and 25
+    limit = min(max(limit, 1), 25)
+    # If value is negative, return the first page
+    offset = min((limit - 1) * page, 0)
+    async with async_session() as session:
+        async with session.begin():
+            beatmaps = await BeatmapDBDAL(session).get_beatmaps_recent(limit, offset)
+            return DefaultResponse(
+                code=APIStatusCode.SUCCESS,
+                message="Successfully retrieved recently created beatmaps!",
+                data={"beatmaps": beatmaps},
+            )
+
+
+@app.get("/beatmaps/popular", tags=["beatmaps"], response_model=DefaultResponse)
+async def get_beatmaps_popular(limit: int = 10, page: int = 1):
+    """
+    Get popular beatmaps.
+
+    - **limit**: Number of beatmaps to return.
+    - **page**: Page number.
+    """
+    # Clamp the value to be between 1 and 25
+    limit = min(max(limit, 1), 25)
+    # If value is negative, return the first page
+    offset = min((limit - 1) * page, 0)
+    async with async_session() as session:
+        async with session.begin():
+            beatmaps = await BeatmapDBDAL(session).get_beatmaps_popular(limit, offset)
+            return DefaultResponse(
+                code=APIStatusCode.SUCCESS,
+                message="Successfully retrieved popular beatmaps!",
+                data={"beatmaps": beatmaps},
+            )
+
+
+@app.get(
+    "/beatmaps/{beatmapset_id}",
+    tags=["beatmaps"],
+    response_model=DefaultResponse,
+)
+async def get_beatmap_by_set(beatmapset_id: int):
+    """
+    Get a specific beatmap.
+
+    - **beatmap_id**: Beatmap ID.
+    """
+    async with async_session() as session:
+        async with session.begin():
+            beatmaps = await BeatmapDBDAL(session).get_beatmap_by_set(beatmapset_id)
+            return DefaultResponse(
+                code=APIStatusCode.SUCCESS,
+                message="Successfully retrieved beatmap!"
+                if len(beatmaps) > 0
+                else "Beatmap not found!",
                 data={"beatmaps": beatmaps},
             )
 
@@ -201,15 +268,16 @@ async def get_all_beatmaps(limit: int = 10, page: int = 1):
     tags=["beatmaps"],
     response_model=DefaultResponse,
 )
-async def get_beatmap(beatmapset_id: int, beatmap_id: int):
+async def get_beatmap_by_set_and_id(beatmapset_id: int, beatmap_id: int):
     """
     Get a specific beatmap.
 
+    - **beatmap_set_id**: Beatmap Set ID.
     - **beatmap_id**: Beatmap ID.
     """
     async with async_session() as session:
         async with session.begin():
-            beatmap = await BeatmapDBDAL(session).get_beatmap_by_id(
+            beatmap = await BeatmapDBDAL(session).get_beatmap_by_set_and_id(
                 beatmapset_id, beatmap_id
             )
             return DefaultResponse(
