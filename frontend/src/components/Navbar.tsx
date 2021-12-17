@@ -86,7 +86,11 @@ export const NavBar = () => {
           direction={"row"}
           spacing={6}
         >
-          <Button onClick={toggleColorMode} colorScheme={"osu"}>
+          <Button
+            onClick={toggleColorMode}
+            colorScheme={"osu"}
+            aria-label={"darkmode-toggle"}
+          >
             {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
           </Button>
         </Stack>
@@ -279,6 +283,7 @@ const NAV_ITEMS: Array<NavItem> = [
   },
   {
     label: "Beatmaps",
+    href: "/beatmaps",
     children: [
       {
         label: "Recent",

@@ -17,7 +17,8 @@ import { Chart } from "react-google-charts";
 import axios from "axios";
 
 import { Container } from "../components/Container";
-import BeatmapInfo from "../components/ImageCard";
+import BeatmapInfo from "../components/BeatmapInfo";
+import Head from "next/head";
 
 const MAX_FILE_SIZE = 5 * 1000 * 1000;
 
@@ -145,120 +146,131 @@ const Predict = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
-    <Container>
-      <Alert status="info" variant="left-accent">
-        <AlertIcon />
-        Backend server for predicting the beatmap type is currently using cpu
-        inference, so performance might be slow.
-      </Alert>
-      <Box py={10} px={5}>
-        <Heading fontSize="6xl" textAlign={"center"}>
-          Predict{" "}
-          <Link href="https://osu.ppy.sh/" color={mainColor}>
-            osu!
-          </Link>{" "}
-          Beatmap
-        </Heading>
-        <Text fontSize={"xl"} textAlign={"center"}>
-          Predict the type of beatmap by uploading it!
-        </Text>
-      </Box>
-      <Box
-        marginBottom={{ base: 10, sm: 16, md: 24 }}
-        px={5}
-        shadow="md"
-        borderWidth="1"
-        bgColor={bg}
-        boxShadow={"2xl"}
-      >
-        <Stack direction={["column", "row"]}>
-          <Box minW={{ base: "xs", md: "xl" }}>
-            <Chart
-              chartType="BarChart"
-              width={"100%"}
-              height={"400px"}
-              loader={<Spinner />}
-              data={chartData.data}
-              options={{
-                colors: [chartAxisColor],
-                backgroundColor: chartBgColor,
-                defaultColor: chartColor,
-                datalessRegionColor: chartColor,
-                hAxis: {
-                  baselineColor: chartColor,
-                  viewWindow: {
-                    min: 0,
-                    max: 1,
+    <>
+      <Head>
+        <title>OsuClassy - Beatmap Predictor | Predict</title>
+        <meta
+          name={"description"}
+          content={
+            "osu! Beatmap predictor, where you can upload a beatmap and it will try to predict the beatmap type"
+          }
+        />
+      </Head>
+      <Container>
+        <Alert status="info" variant="left-accent">
+          <AlertIcon />
+          Backend server for predicting the beatmap type is currently using cpu
+          inference, so performance might be slow.
+        </Alert>
+        <Box py={10} px={5}>
+          <Heading fontSize="6xl" textAlign={"center"}>
+            Predict{" "}
+            <Link href="https://osu.ppy.sh/" color={mainColor}>
+              osu!
+            </Link>{" "}
+            Beatmap
+          </Heading>
+          <Text fontSize={"xl"} textAlign={"center"}>
+            Predict the type of beatmap by uploading it!
+          </Text>
+        </Box>
+        <Box
+          marginBottom={{ base: 10, sm: 16, md: 24 }}
+          px={5}
+          shadow="md"
+          borderWidth="1"
+          bgColor={bg}
+          boxShadow={"2xl"}
+        >
+          <Stack direction={["column", "row"]}>
+            <Box minW={{ base: "xs", md: "xl" }}>
+              <Chart
+                chartType="BarChart"
+                width={"100%"}
+                height={"400px"}
+                loader={<Spinner />}
+                data={chartData.data}
+                options={{
+                  colors: [chartAxisColor],
+                  backgroundColor: chartBgColor,
+                  defaultColor: chartColor,
+                  datalessRegionColor: chartColor,
+                  hAxis: {
+                    baselineColor: chartColor,
+                    viewWindow: {
+                      min: 0,
+                      max: 1,
+                    },
+                    textStyle: {
+                      color: chartColor,
+                    },
                   },
-                  textStyle: {
-                    color: chartColor,
+                  vAxis: {
+                    baselineColor: chartColor,
+                    textStyle: {
+                      color: chartColor,
+                    },
                   },
-                },
-                vAxis: {
-                  baselineColor: chartColor,
-                  textStyle: {
-                    color: chartColor,
+                  animation: {
+                    duration: 1000,
+                    easing: "out",
                   },
-                },
-                animation: {
-                  duration: 1000,
-                  easing: "out",
-                },
-                legend: { position: "none" },
-              }}
-            />
-          </Box>
-          <Box p={5} minW={{ base: "xs", md: "md" }} height={"400px"}>
-            {prediction !== null && (
-              <BeatmapInfo
-                title={prediction.data.title}
-                artist={prediction.data.artist}
-                version={prediction.data.version}
-                mappedBy={prediction.data.creator}
-                link={`https://osu.ppy.sh/beatmapsets/${prediction.data.beatmap_set_id}#osu/${prediction.data.beatmap_id}`}
-                imgSrc={`https://assets.ppy.sh/beatmaps/${prediction.data.beatmap_set_id}/covers/cover.jpg`}
+                  legend: { position: "none" },
+                }}
               />
-            )}
-          </Box>
-        </Stack>
-        <Center>
-          <VStack width={"100%"} m={10}>
-            {prediction !== null && showSuccessMessage && (
-              <Alert status="success" variant="left-accent">
-                {prediction.message} Processing time:{" "}
-                {prediction.data.processing_time}
-              </Alert>
-            )}
-            {isError && (
-              <Alert status="error" variant="left-accent">
-                <AlertIcon />
-                {errorMessage}
-              </Alert>
-            )}
-            <Box
-              w={"100%"}
-              px={{ base: 10, md: 25 }}
-              py={50}
-              bg={bg}
-              borderRadius={5}
-              borderWidth={2}
-              borderColor={mainColor}
-              textAlign="center"
-              {...getRootProps()}
-            >
-              <input accept=".osu" {...getInputProps()} />
-              {isProcessing ? (
-                <Spinner />
-              ) : isDragActive ? (
-                <Text>Drop the file here...</Text>
-              ) : (
-                <Text>Drag 'n' drop file here, or click to select file.</Text>
+            </Box>
+            <Box p={5} minW={{ base: "xs", md: "md" }} height={"400px"}>
+              {prediction !== null && (
+                <BeatmapInfo
+                  title={prediction.data.title}
+                  artist={prediction.data.artist}
+                  version={prediction.data.version}
+                  mappedBy={prediction.data.creator}
+                  link={`https://osu.ppy.sh/beatmapsets/${prediction.data.beatmap_set_id}#osu/${prediction.data.beatmap_id}`}
+                  imgSrc={`https://assets.ppy.sh/beatmaps/${prediction.data.beatmap_set_id}/covers/cover.jpg`}
+                />
               )}
             </Box>
-          </VStack>
-        </Center>
-      </Box>
-    </Container>
+          </Stack>
+          <Center>
+            <VStack width={"100%"} m={10}>
+              {prediction !== null && showSuccessMessage && (
+                <Alert status="success" variant="left-accent">
+                  {prediction.message} Processing time:{" "}
+                  {prediction.data.processing_time}
+                </Alert>
+              )}
+              {isError && (
+                <Alert status="error" variant="left-accent">
+                  <AlertIcon />
+                  {errorMessage}
+                </Alert>
+              )}
+              <Box
+                w={"100%"}
+                px={{ base: 10, md: 25 }}
+                py={50}
+                bg={bg}
+                borderRadius={5}
+                borderWidth={2}
+                borderColor={mainColor}
+                textAlign="center"
+                {...getRootProps()}
+              >
+                <input accept=".osu" {...getInputProps()} />
+                {isProcessing ? (
+                  <Spinner />
+                ) : isDragActive ? (
+                  <Text>Drop the file here...</Text>
+                ) : (
+                  <Text>Drag 'n' drop file here, or click to select file.</Text>
+                )}
+              </Box>
+            </VStack>
+          </Center>
+        </Box>
+      </Container>
+    </>
   );
 };
 

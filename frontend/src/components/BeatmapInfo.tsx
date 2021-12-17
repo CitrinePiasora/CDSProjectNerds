@@ -52,11 +52,17 @@ export default function BeatmapInfo({
             <Text fontWeight={600}>Mapped by {mappedBy}</Text>
           </Stack>
 
-          <Button w={"full"} mt={8} rounded={"md"} colorScheme={"osu"}>
-            <Link href={link} isExternal _hover={{ textDecoration: "none" }}>
+          <Link href={link} isExternal _hover={{ textDecoration: "none" }}>
+            <Button
+              w={"full"}
+              mt={8}
+              rounded={"md"}
+              colorScheme={"osu"}
+              aria-label={"visit-beatmap"}
+            >
               Visit Beatmap <ExternalLinkIcon mx="2px" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </Box>
       </Box>
     </Center>
