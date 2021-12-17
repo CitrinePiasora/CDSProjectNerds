@@ -100,48 +100,47 @@ const Predict = () => {
     setProcessing(true);
     let formData = new FormData();
     formData.append("file", file);
-    axios({
-      method: "post",
-      url: "http://osuclassy-dev.com/api/predict",
-      data: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-      .then((res) => {
-        setPrediction(res.data);
-        setChartData({
-          data: [
-            ["Label", "Predicted Value"],
-            ["Alternate", res.data.data.predicted_type.alternate],
-            ["Finger Control", res.data.data.predicted_type.fingercontrol],
-            ["Jump", res.data.data.predicted_type.jump],
-            ["Speed", res.data.data.predicted_type.speed],
-            ["Stamina", res.data.data.predicted_type.stamina],
-            ["Stream", res.data.data.predicted_type.stream],
-            ["Tech", res.data.data.predicted_type.tech],
-          ],
-        });
-        setShowSuccessMessage(true);
-        setProcessing(false);
-        window.setTimeout(() => {
-          setShowSuccessMessage(false);
-        }, 5000);
-      })
-      .catch((err) => {
-        if (err.response && err.response.status === 400) {
-          setErrorMessage(err.response.data.reason);
-        } else {
-          console.log(err);
-          setErrorMessage("Unknown error");
-        }
-        setError(true);
-        setProcessing(false);
-        window.setTimeout(() => {
-          setError(false);
-          setErrorMessage("");
-        }, 5000);
+    try {
+      const res = await axios({
+        method: "post",
+        url: "http://osuclassy-dev.com/api/predict",
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+      setPrediction(res.data);
+      setChartData({
+        data: [
+          ["Label", "Predicted Value"],
+          ["Alternate", res.data.data.predicted_type.alternate],
+          ["Finger Control", res.data.data.predicted_type.fingercontrol],
+          ["Jump", res.data.data.predicted_type.jump],
+          ["Speed", res.data.data.predicted_type.speed],
+          ["Stamina", res.data.data.predicted_type.stamina],
+          ["Stream", res.data.data.predicted_type.stream],
+          ["Tech", res.data.data.predicted_type.tech],
+        ],
+      });
+      setShowSuccessMessage(true);
+      setProcessing(false);
+      window.setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
+    } catch (err) {
+      if (err.response && err.response.status === 400) {
+        setErrorMessage(err.response.data.reason);
+      } else {
+        console.log(err);
+        setErrorMessage("Unknown error");
+      }
+      setError(true);
+      setProcessing(false);
+      window.setTimeout(() => {
+        setError(false);
+        setErrorMessage("");
+      }, 5000);
+    }
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
