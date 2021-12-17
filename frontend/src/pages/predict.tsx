@@ -127,19 +127,19 @@ const Predict = () => {
         }, 5000);
       })
       .catch((err) => {
-        setError(true);
         if (err.response && err.response.status === 400) {
           setErrorMessage(err.response.data.reason);
         } else {
           console.log(err);
           setErrorMessage("Unknown error");
         }
+        setError(true);
+        setProcessing(false);
         window.setTimeout(() => {
           setError(false);
           setErrorMessage("");
         }, 5000);
       });
-    setProcessing(false);
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -243,11 +243,9 @@ const Predict = () => {
               {isProcessing ? (
                 <Spinner />
               ) : isDragActive ? (
-                <Text>Drop the files here...</Text>
+                <Text>Drop the file here...</Text>
               ) : (
-                <Text>
-                  Drag 'n' drop some files here, or click to select files
-                </Text>
+                <Text>Drag 'n' drop file here, or click to select file.</Text>
               )}
             </Box>
           </VStack>
