@@ -26,6 +26,9 @@ const Index = () => {
   const [beatmaps, setBeatmaps] = useState<BeatmapResponse[]>([]);
 
   useEffect(() => {
+    if (typeof beatmapset_id === "undefined") {
+      return;
+    }
     axios({
       method: "get",
       url: `http://api.osuclassy-dev.com/beatmaps/${beatmapset_id}`,
@@ -36,7 +39,7 @@ const Index = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [beatmapset_id]);
 
   return (
     <>
