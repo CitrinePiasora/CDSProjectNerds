@@ -1,4 +1,4 @@
-# Pull alpine image with python installed
+# Pull image with python installed
 FROM python:3.9-bullseye
 
 # Update os
