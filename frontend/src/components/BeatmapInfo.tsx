@@ -34,8 +34,13 @@ export default function BeatmapInfo({
     "brightness(100%)",
     "brightness(75%)"
   );
+  // 312 = 360 - (24 * 2)
+  // 24 is the padding
+  // same with 352
+  const maxWidth = minified ? "312px" : "352px";
   return (
     <Box
+      // w={minified ? "360px" : "400px"}
       w={"full"}
       bg={useColorModeValue("white", "gray.800")}
       boxShadow={"lg"}
@@ -56,17 +61,33 @@ export default function BeatmapInfo({
             fontSize={minified ? "lg" : "2xl"}
             fontWeight={500}
             fontFamily={"body"}
+            maxWidth={maxWidth}
             isTruncated
           >
             {title}
           </Heading>
-          <Text fontSize={"sm"} color={textColor} isTruncated>
+          <Text
+            fontSize={"sm"}
+            color={textColor}
+            maxWidth={maxWidth}
+            isTruncated
+          >
             [{version}]
           </Text>
-          <Text color={textColor} fontSize={minified ? "sm" : ""} isTruncated>
+          <Text
+            color={textColor}
+            fontSize={minified ? "sm" : ""}
+            maxWidth={maxWidth}
+            isTruncated
+          >
             by {artist}
           </Text>
-          <Text fontWeight={600} fontSize={minified ? "sm" : ""} isTruncated>
+          <Text
+            fontWeight={600}
+            fontSize={minified ? "sm" : ""}
+            maxWidth={maxWidth}
+            isTruncated
+          >
             Mapped by {mappedBy}
           </Text>
         </Stack>
