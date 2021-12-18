@@ -1,7 +1,5 @@
-import { StarIcon } from "@chakra-ui/icons";
 import {
   Box,
-  Button,
   Container,
   Flex,
   Grid,

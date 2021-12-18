@@ -1,6 +1,5 @@
 import Head from "next/head";
-import NextLink from "next/link";
-import { Box, useColorModeValue, Spinner, Stack } from "@chakra-ui/react";
+import { Box, useColorModeValue, Stack } from "@chakra-ui/react";
 
 import axios from "axios";
 
@@ -8,7 +7,15 @@ import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Chart } from "react-google-charts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface BeatmapResponse {
   beatmap_id: number;
@@ -26,19 +33,17 @@ interface BeatmapResponse {
   tech_p: number;
 }
 interface PredictionChartData {
-  data: [string, number | string][];
+  data: { [key: string]: string | number }[];
 }
-
 const DEFAULT_PREDICTION_CHART_DATA: PredictionChartData = {
   data: [
-    ["Label", "Predicted Value"],
-    ["Alternate", 0.0],
-    ["Finger Control", 0.0],
-    ["Jump", 0.0],
-    ["Speed", 0.0],
-    ["Stamina", 0.0],
-    ["Stream", 0.0],
-    ["Tech", 0.0],
+    { name: "Alternate", value: 0.0 },
+    { name: "Finger Control", value: 0.0 },
+    { name: "Jump", value: 0.0 },
+    { name: "Speed", value: 0.0 },
+    { name: "Stamina", value: 0.0 },
+    { name: "Stream", value: 0.0 },
+    { name: "Tech", value: 0.0 },
   ],
 };
 
@@ -51,7 +56,6 @@ const Index = () => {
 
   // Google chart colors
   const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
-  const chartBgColor = useColorModeValue("#ffffff", "#1a202c");
   const chartColor = useColorModeValue("#4a5568", "#ffffff");
 
   const [beatmap, setBeatmap] = useState<BeatmapResponse | null>(null);
@@ -74,14 +78,19 @@ const Index = () => {
         setBeatmap(res.data.data.beatmap);
         setChartData({
           data: [
-            ["Label", "Predicted Value"],
-            ["Alternate", res.data.data.beatmap.alternate_p],
-            ["Finger Control", res.data.data.beatmap.fingercontrol_p],
-            ["Jump", res.data.data.beatmap.jump_p],
-            ["Speed", res.data.data.beatmap.speed_p],
-            ["Stamina", res.data.data.beatmap.stamina_p],
-            ["Stream", res.data.data.beatmap.stream_p],
-            ["Tech", res.data.data.beatmap.tech_p],
+            {
+              name: "Alternate",
+              value: res.data.data.predicted_type.alternate,
+            },
+            {
+              name: "Finger Control",
+              value: res.data.data.predicted_type.fingercontrol,
+            },
+            { name: "Jump", value: res.data.data.predicted_type.jump },
+            { name: "Speed", value: res.data.data.predicted_type.speed },
+            { name: "Stamina", value: res.data.data.predicted_type.stamina },
+            { name: "Stream", value: res.data.data.predicted_type.stream },
+            { name: "Tech", value: res.data.data.predicted_type.tech },
           ],
         });
       })
@@ -112,42 +121,29 @@ const Index = () => {
           boxShadow={"2xl"}
         >
           <Stack direction={["column", "row"]}>
-            <Box minW={{ base: "xs", md: "xl" }}>
-              <Chart
-                chartType="BarChart"
-                width={"100%"}
-                height={"400px"}
-                loader={<Spinner />}
+            <ResponsiveContainer width={"100%"} height={400}>
+              <BarChart
                 data={chartData.data}
-                options={{
-                  colors: [chartAxisColor],
-                  backgroundColor: chartBgColor,
-                  defaultColor: chartColor,
-                  datalessRegionColor: chartColor,
-                  hAxis: {
-                    baselineColor: chartColor,
-                    viewWindow: {
-                      min: 0,
-                      max: 1,
-                    },
-                    textStyle: {
-                      color: chartColor,
-                    },
-                  },
-                  vAxis: {
-                    baselineColor: chartColor,
-                    textStyle: {
-                      color: chartColor,
-                    },
-                  },
-                  animation: {
-                    duration: 1000,
-                    easing: "out",
-                  },
-                  legend: { position: "none" },
-                }}
-              />
-            </Box>
+                layout={"vertical"}
+                margin={{ left: 20, right: 15, top: 40 }}
+              >
+                <XAxis
+                  type={"number"}
+                  domain={[0.0, 1.0]}
+                  stroke={chartColor}
+                  reversed
+                />
+                <YAxis
+                  type={"category"}
+                  dataKey={"name"}
+                  orientation={"right"}
+                  stroke={chartColor}
+                ></YAxis>
+                <Tooltip />
+                <CartesianGrid horizontal={false} />
+                <Bar dataKey={"value"} fill={chartAxisColor} />
+              </BarChart>
+            </ResponsiveContainer>
             <Box
               px={5}
               py={10}

@@ -13,12 +13,20 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Chart } from "react-google-charts";
 import axios from "axios";
 
 import { Container } from "../components/Container";
 import BeatmapInfo from "../components/BeatmapInfo";
 import Head from "next/head";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 const MAX_FILE_SIZE = 5 * 1000 * 1000;
 
@@ -32,25 +40,24 @@ interface PredictionResponse {
   version: string;
   predicted_type: { [key: string]: number };
 }
-interface PredictionChartData {
-  data: [string, number | string][];
-}
 interface APIResponse {
   code: number;
   message: string;
   data: PredictionResponse;
 }
 
+interface PredictionChartData {
+  data: { [key: string]: string | number }[];
+}
 const DEFAULT_PREDICTION_CHART_DATA: PredictionChartData = {
   data: [
-    ["Label", "Predicted Value"],
-    ["Alternate", 0.0],
-    ["Finger Control", 0.0],
-    ["Jump", 0.0],
-    ["Speed", 0.0],
-    ["Stamina", 0.0],
-    ["Stream", 0.0],
-    ["Tech", 0.0],
+    { name: "Alternate", value: 0.0 },
+    { name: "Finger Control", value: 0.0 },
+    { name: "Jump", value: 0.0 },
+    { name: "Speed", value: 0.0 },
+    { name: "Stamina", value: 0.0 },
+    { name: "Stream", value: 0.0 },
+    { name: "Tech", value: 0.0 },
   ],
 };
 
@@ -61,7 +68,6 @@ const Predict = () => {
 
   // Google chart colors
   const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
-  const chartBgColor = useColorModeValue("#ffffff", "#1a202c");
   const chartColor = useColorModeValue("#4a5568", "#ffffff");
 
   const [isError, setError] = useState(false);
@@ -112,14 +118,16 @@ const Predict = () => {
       setPrediction(res.data);
       setChartData({
         data: [
-          ["Label", "Predicted Value"],
-          ["Alternate", res.data.data.predicted_type.alternate],
-          ["Finger Control", res.data.data.predicted_type.fingercontrol],
-          ["Jump", res.data.data.predicted_type.jump],
-          ["Speed", res.data.data.predicted_type.speed],
-          ["Stamina", res.data.data.predicted_type.stamina],
-          ["Stream", res.data.data.predicted_type.stream],
-          ["Tech", res.data.data.predicted_type.tech],
+          { name: "Alternate", value: res.data.data.predicted_type.alternate },
+          {
+            name: "Finger Control",
+            value: res.data.data.predicted_type.fingercontrol,
+          },
+          { name: "Jump", value: res.data.data.predicted_type.jump },
+          { name: "Speed", value: res.data.data.predicted_type.speed },
+          { name: "Stamina", value: res.data.data.predicted_type.stamina },
+          { name: "Stream", value: res.data.data.predicted_type.stream },
+          { name: "Tech", value: res.data.data.predicted_type.tech },
         ],
       });
       setShowSuccessMessage(true);
@@ -183,40 +191,29 @@ const Predict = () => {
         >
           <Stack direction={["column", "row"]}>
             <Box minW={{ base: "xs", md: "xl" }}>
-              <Chart
-                chartType="BarChart"
-                width={"100%"}
-                height={"400px"}
-                loader={<Spinner />}
-                data={chartData.data}
-                options={{
-                  colors: [chartAxisColor],
-                  backgroundColor: chartBgColor,
-                  defaultColor: chartColor,
-                  datalessRegionColor: chartColor,
-                  hAxis: {
-                    baselineColor: chartColor,
-                    viewWindow: {
-                      min: 0,
-                      max: 1,
-                    },
-                    textStyle: {
-                      color: chartColor,
-                    },
-                  },
-                  vAxis: {
-                    baselineColor: chartColor,
-                    textStyle: {
-                      color: chartColor,
-                    },
-                  },
-                  animation: {
-                    duration: 1000,
-                    easing: "out",
-                  },
-                  legend: { position: "none" },
-                }}
-              />
+              <ResponsiveContainer width={"100%"} height={400}>
+                <BarChart
+                  data={chartData.data}
+                  layout={"vertical"}
+                  margin={{ left: 20, right: 15, top: 40 }}
+                >
+                  <XAxis
+                    type={"number"}
+                    domain={[0.0, 1.0]}
+                    stroke={chartColor}
+                    reversed
+                  />
+                  <YAxis
+                    type={"category"}
+                    dataKey={"name"}
+                    orientation={"right"}
+                    stroke={chartColor}
+                  ></YAxis>
+                  <Tooltip />
+                  <CartesianGrid horizontal={false} />
+                  <Bar dataKey={"value"} fill={chartAxisColor} />
+                </BarChart>
+              </ResponsiveContainer>
             </Box>
             <Box
               px={5}
