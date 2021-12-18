@@ -78,7 +78,7 @@ const Predict = () => {
     try {
       const res = await axios({
         method: "post",
-        url: "http://osuclassy-dev.com/api/predict",
+        url: `http://${process.env.BE_URL}/api/predict`,
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
