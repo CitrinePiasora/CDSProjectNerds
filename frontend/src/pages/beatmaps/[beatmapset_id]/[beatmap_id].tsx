@@ -51,7 +51,7 @@ const Index = () => {
     }
     axios({
       method: "get",
-      url: `http://${process.env.BE_URL}/beatmaps/${beatmapset_id}/${beatmap_id}`,
+      url: `http://api.osuclassy-dev.com/beatmaps/${beatmapset_id}/${beatmap_id}`,
     })
       .then((res) => {
         setBeatmap(res.data.data.beatmap);

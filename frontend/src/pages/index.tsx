@@ -21,7 +21,7 @@ export const getStaticProps: GetStaticProps = async () => {
   try {
     const out = await axios({
       method: "get",
-      url: `http://${process.env.BE_URL}/beatmaps/preview`,
+      url: `http://api.osuclassy-dev.com/beatmaps/preview`,
     });
     return {
       props: out.data.data,
