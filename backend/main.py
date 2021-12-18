@@ -186,7 +186,9 @@ async def get_beatmaps(limit: int = 10, page: int = 1):
     # Clamp the value to be between 1 and 25
     limit = min(max(limit, 1), 25)
     # If value is negative, return the first page
-    offset = min((limit - 1) * page, 0)
+    offset = limit * (page - 1)
+    offset = offset if offset >= 0 else 0
+
     async with async_session() as session:
         async with session.begin():
             beatmaps = await BeatmapDBDAL(session).get_beatmaps(limit, offset)
@@ -208,7 +210,9 @@ async def get_beatmaps_recent(limit: int = 10, page: int = 1):
     # Clamp the value to be between 1 and 25
     limit = min(max(limit, 1), 25)
     # If value is negative, return the first page
-    offset = min((limit - 1) * page, 0)
+    offset = limit * (page - 1)
+    offset = offset if offset >= 0 else 0
+    
     async with async_session() as session:
         async with session.begin():
             beatmaps = await BeatmapDBDAL(session).get_beatmaps_recent(limit, offset)
@@ -230,7 +234,9 @@ async def get_beatmaps_popular(limit: int = 10, page: int = 1):
     # Clamp the value to be between 1 and 25
     limit = min(max(limit, 1), 25)
     # If value is negative, return the first page
-    offset = min((limit - 1) * page, 0)
+    offset = limit * (page - 1)
+    offset = offset if offset >= 0 else 0
+    
     async with async_session() as session:
         async with session.begin():
             beatmaps = await BeatmapDBDAL(session).get_beatmaps_popular(limit, offset)

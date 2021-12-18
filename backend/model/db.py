@@ -140,8 +140,8 @@ class BeatmapDAL:
         q = await self.db_session.execute(
             select(*SIMPLE_COLUMNS)
             .order_by(desc(Beatmap.updated_at))
-            .offset(offset)
             .limit(limit)
+            .offset(offset)
         )
         beatmaps = []
         for beatmap_id, beatmapset_id, artist, title, creator, version, *_ in q:
@@ -165,8 +165,8 @@ class BeatmapDAL:
         q = await self.db_session.execute(
             select(*SIMPLE_COLUMNS)
             .order_by(desc(Beatmap.created_at))
-            .offset(offset)
             .limit(limit)
+            .offset(offset)
         )
         beatmaps = []
         for beatmap_id, beatmapset_id, artist, title, creator, version, *_ in q:
@@ -190,8 +190,8 @@ class BeatmapDAL:
         q = await self.db_session.execute(
             select(*SIMPLE_COLUMNS)
             .order_by(desc(Beatmap.view_count))
-            .offset(offset)
             .limit(limit)
+            .offset(offset)
         )
         beatmaps = []
         for beatmap_id, beatmapset_id, artist, title, creator, version, *_ in q:
