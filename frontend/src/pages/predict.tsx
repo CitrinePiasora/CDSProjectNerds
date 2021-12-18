@@ -25,7 +25,7 @@ const MAX_FILE_SIZE = 5 * 1000 * 1000;
 interface PredictionResponse {
   processing_time: string;
   beatmap_id: number;
-  beatmap_set_id: number;
+  beatmapset_id: number;
   artist: string;
   title: string;
   creator: string;
@@ -151,7 +151,7 @@ const Predict = () => {
         <meta
           name={"description"}
           content={
-            "osu! Beatmap predictor, where you can upload a beatmap and it will try to predict the beatmap type"
+            "osu! Beatmap predictor, where you can upload a beatmap and it will try to predict the type of the beatmap."
           }
         />
       </Head>
@@ -218,15 +218,20 @@ const Predict = () => {
                 }}
               />
             </Box>
-            <Box p={5} minW={{ base: "xs", md: "md" }} height={"400px"}>
+            <Box
+              px={5}
+              py={10}
+              minW={{ base: "xs", md: "md" }}
+              height={"400px"}
+            >
               {prediction !== null && (
                 <BeatmapInfo
                   title={prediction.data.title}
                   artist={prediction.data.artist}
                   version={prediction.data.version}
                   mappedBy={prediction.data.creator}
-                  link={`https://osu.ppy.sh/beatmapsets/${prediction.data.beatmap_set_id}#osu/${prediction.data.beatmap_id}`}
-                  imgSrc={`https://assets.ppy.sh/beatmaps/${prediction.data.beatmap_set_id}/covers/cover.jpg`}
+                  link={`https://osu.ppy.sh/beatmapsets/${prediction.data.beatmapset_id}#osu/${prediction.data.beatmap_id}`}
+                  imgSrc={`https://assets.ppy.sh/beatmaps/${prediction.data.beatmapset_id}/covers/cover.jpg`}
                 />
               )}
             </Box>

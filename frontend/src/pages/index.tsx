@@ -1,66 +1,247 @@
-import {
-  Link as ChakraLink,
-  Text,
-  Code,
-  List,
-  ListIcon,
-  ListItem,
-  useColorModeValue,
-} from "@chakra-ui/react";
-import { CheckCircleIcon, LinkIcon } from "@chakra-ui/icons";
-
-import { Hero } from "../components/Hero";
-import { Container } from "../components/Container";
-import { Main } from "../components/Main";
-import { CTA } from "../components/CTA";
-import { Footer } from "../components/Footer";
+import { GetStaticProps, InferGetStaticPropsType } from "next";
 import Head from "next/head";
+import NextLink from "next/link";
+import {
+  Box,
+  Grid,
+  Heading,
+  useColorModeValue,
+  VStack,
+  Link,
+  Button,
+  Flex,
+} from "@chakra-ui/react";
+import { StarIcon } from "@chakra-ui/icons";
 
-const Index = () => {
+import axios from "axios";
+
+import { Container } from "../components/Container";
+import BeatmapInfo from "../components/BeatmapInfo";
+
+export const getStaticProps: GetStaticProps = async () => {
+  try {
+    const out = await axios({
+      method: "get",
+      url: "http://osuclassy-dev.com/api/beatmaps/preview",
+    });
+    return {
+      props: out.data.data,
+    };
+  } catch (err) {
+    console.error(err);
+    return { props: { bRUpd: [], bRUpl: [], bPop: [] } };
+  }
+};
+
+const Index = ({
+  bRUpd,
+  bRUpl,
+  bPop,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+  const bg = useColorModeValue("white", "gray.800");
+  const mainColor = useColorModeValue("osu.600", "osu.300");
   return (
     <>
       <Head>
         <title>OsuClassy - Beatmap Predictor | Home</title>
-        <meta name={"description"} content={"Home page of OsuClassy"} />
+        <meta
+          name={"description"}
+          content={
+            "Home Page of OsuClassy. Preview set of beatmaps already processed by OsuClassy, and sorted by recently uploaded, recently updated, and popularity."
+          }
+        />
       </Head>
-      <Container height="100vh">
-        <Hero title="OsuClassy" />
-        <Main>
-          <Text>
-            Example repository of <Code>Next.js</Code> + <Code>chakra-ui</Code>{" "}
-            + <Code>TypeScript</Code>.
-          </Text>
-
-          <List spacing={3} my={0}>
-            <ListItem>
-              <ListIcon as={CheckCircleIcon} color="osu.500" />
-              <ChakraLink
-                isExternal
-                href="https://chakra-ui.com"
-                flexGrow={1}
-                mr={2}
+      <Container>
+        <VStack spacing={5} m={5}>
+          <Box
+            borderWidth="1"
+            bgColor={bg}
+            boxShadow={"2xl"}
+            p={5}
+            minW={{ base: "xs", md: "xl" }}
+          >
+            <VStack>
+              <Flex w={"100%"}>
+                <Heading fontSize="4xl" p={5}>
+                  Popular <StarIcon color={mainColor} />
+                </Heading>
+                <NextLink href={"/beatmaps/popular"} passHref>
+                  <Link
+                    marginLeft={"auto"}
+                    marginRight={5}
+                    _hover={{ textDecoration: "none" }}
+                  >
+                    <Button
+                      w={"full"}
+                      mt={8}
+                      rounded={"md"}
+                      colorScheme={"osu"}
+                      aria-label={"see-more-beatmap-popular"}
+                    >
+                      See more
+                    </Button>
+                  </Link>
+                </NextLink>
+              </Flex>
+              <Box
+                borderWidth="1"
+                bgColor={bg}
+                boxShadow={"lg"}
+                p={5}
+                w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}
               >
-                Chakra UI <LinkIcon />
-              </ChakraLink>
-            </ListItem>
-            <ListItem>
-              <ListIcon as={CheckCircleIcon} color="osu.500" />
-              <ChakraLink
-                isExternal
-                href="https://nextjs.org"
-                flexGrow={1}
-                mr={2}
+                <Grid
+                  templateColumns={{
+                    base: "repeat(1, 1fr)",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                  }}
+                  gap={4}
+                >
+                  {bPop.map((b, i) => (
+                    <NextLink
+                      key={`bPop-${i}`}
+                      href={`/beatmaps/${b.beatmapset_id}/${b.beatmap_id}`}
+                      passHref
+                    >
+                      <Link
+                        _hover={{ textDecoration: "none", boxShadow: "2xl" }}
+                      >
+                        <BeatmapInfo
+                          artist={b.artist}
+                          title={b.title}
+                          version={b.version}
+                          mappedBy={b.creator}
+                          imgSrc={`https://assets.ppy.sh/beatmaps/${b.beatmapset_id}/covers/cover.jpg`}
+                          minified
+                        />
+                      </Link>
+                    </NextLink>
+                  ))}
+                </Grid>
+              </Box>
+            </VStack>
+          </Box>
+          <Box
+            borderWidth="1"
+            bgColor={bg}
+            boxShadow={"2xl"}
+            p={5}
+            minW={{ base: "xs", md: "xl" }}
+          >
+            <VStack>
+              <Flex w={"100%"}>
+                <Heading fontSize="4xl" p={5}>
+                  Recently Uploaded
+                </Heading>
+                <NextLink href={"/beatmaps/recent"} passHref>
+                  <Link
+                    marginLeft={"auto"}
+                    marginRight={5}
+                    _hover={{ textDecoration: "none" }}
+                  >
+                    <Button
+                      w={"full"}
+                      mt={8}
+                      rounded={"md"}
+                      colorScheme={"osu"}
+                      aria-label={"see-more-beatmap-recent"}
+                    >
+                      See more
+                    </Button>
+                  </Link>
+                </NextLink>
+              </Flex>
+              <Box
+                borderWidth="1"
+                bgColor={bg}
+                boxShadow={"lg"}
+                p={5}
+                w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}
               >
-                Next.js <LinkIcon />
-              </ChakraLink>
-            </ListItem>
-          </List>
-        </Main>
-
-        <Footer>
-          <Text>Next ❤️ Chakra</Text>
-        </Footer>
-        <CTA />
+                <Grid
+                  templateColumns={{
+                    base: "repeat(1, 1fr)",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                  }}
+                  gap={4}
+                >
+                  {bRUpl.map((b, i) => (
+                    <NextLink
+                      key={`bPop-${i}`}
+                      href={`/beatmaps/${b.beatmapset_id}/${b.beatmap_id}`}
+                      passHref
+                    >
+                      <Link
+                        _hover={{ textDecoration: "none", boxShadow: "2xl" }}
+                      >
+                        <BeatmapInfo
+                          artist={b.artist}
+                          title={b.title}
+                          version={b.version}
+                          mappedBy={b.creator}
+                          imgSrc={`https://assets.ppy.sh/beatmaps/${b.beatmapset_id}/covers/cover.jpg`}
+                          minified
+                        />
+                      </Link>
+                    </NextLink>
+                  ))}
+                </Grid>
+              </Box>
+            </VStack>
+          </Box>
+          <Box
+            borderWidth="1"
+            bgColor={bg}
+            boxShadow={"2xl"}
+            p={5}
+            minW={{ base: "xs", md: "xl" }}
+          >
+            <VStack>
+              <Heading fontSize="4xl" w={"100%"} p={5}>
+                Recently Updated
+              </Heading>
+              <Box
+                borderWidth="1"
+                bgColor={bg}
+                boxShadow={"lg"}
+                p={5}
+                w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}
+              >
+                <Grid
+                  templateColumns={{
+                    base: "repeat(1, 1fr)",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                  }}
+                  gap={4}
+                >
+                  {bRUpd.map((b, i) => (
+                    <NextLink
+                      key={`bPop-${i}`}
+                      href={`/beatmaps/${b.beatmapset_id}/${b.beatmap_id}`}
+                      passHref
+                    >
+                      <Link
+                        _hover={{ textDecoration: "none", boxShadow: "2xl" }}
+                      >
+                        <BeatmapInfo
+                          artist={b.artist}
+                          title={b.title}
+                          version={b.version}
+                          mappedBy={b.creator}
+                          imgSrc={`https://assets.ppy.sh/beatmaps/${b.beatmapset_id}/covers/cover.jpg`}
+                          minified
+                        />
+                      </Link>
+                    </NextLink>
+                  ))}
+                </Grid>
+              </Box>
+            </VStack>
+          </Box>
+        </VStack>
       </Container>
     </>
   );

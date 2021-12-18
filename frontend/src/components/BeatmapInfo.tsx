@@ -2,7 +2,6 @@ import { ExternalLinkIcon } from "@chakra-ui/icons";
 import {
   Heading,
   Box,
-  Center,
   Image,
   Text,
   Stack,
@@ -16,8 +15,9 @@ interface Props {
   artist: string;
   version: string;
   mappedBy: string;
-  link: string;
   imgSrc: string;
+  link?: string;
+  minified?: boolean;
 }
 
 export default function BeatmapInfo({
@@ -27,32 +27,56 @@ export default function BeatmapInfo({
   mappedBy,
   link,
   imgSrc,
+  minified,
 }: Props) {
   const textColor = useColorModeValue("gray.500", "gray.400");
+  const imageBrightness = useColorModeValue(
+    "brightness(100%)",
+    "brightness(75%)"
+  );
   return (
-    <Center py={6}>
-      <Box
+    <Box
+      w={"full"}
+      bg={useColorModeValue("white", "gray.800")}
+      boxShadow={"lg"}
+      rounded={"md"}
+      overflow={"hidden"}
+    >
+      <Image
+        h={"120px"}
         w={"full"}
-        bg={useColorModeValue("white", "gray.800")}
-        boxShadow={"lg"}
-        rounded={"md"}
-        overflow={"hidden"}
-      >
-        <Image h={"120px"} w={"full"} src={imgSrc} objectFit={"cover"} />
+        src={imgSrc}
+        objectFit={"cover"}
+        filter={imageBrightness}
+      />
 
-        <Box p={6}>
-          <Stack spacing={0} align={"center"} mb={5}>
-            <Heading fontSize={"2xl"} fontWeight={500} fontFamily={"body"}>
-              {title}
-            </Heading>
-            <Text fontSize={"sm"} color={textColor}>
-              [{version}]
-            </Text>
-            <Text color={textColor}>by {artist}</Text>
-            <Text fontWeight={600}>Mapped by {mappedBy}</Text>
-          </Stack>
+      <Box p={6}>
+        <Stack spacing={0} align={"center"}>
+          <Heading
+            fontSize={minified ? "lg" : "2xl"}
+            fontWeight={500}
+            fontFamily={"body"}
+            isTruncated
+          >
+            {title}
+          </Heading>
+          <Text fontSize={"sm"} color={textColor} isTruncated>
+            [{version}]
+          </Text>
+          <Text color={textColor} fontSize={minified ? "sm" : ""} isTruncated>
+            by {artist}
+          </Text>
+          <Text fontWeight={600} fontSize={minified ? "sm" : ""} isTruncated>
+            Mapped by {mappedBy}
+          </Text>
+        </Stack>
 
-          <Link href={link} isExternal _hover={{ textDecoration: "none" }}>
+        {!minified && (
+          <Link
+            href={link ?? "#"}
+            isExternal
+            _hover={{ textDecoration: "none" }}
+          >
             <Button
               w={"full"}
               mt={8}
@@ -63,8 +87,8 @@ export default function BeatmapInfo({
               Visit Beatmap <ExternalLinkIcon mx="2px" />
             </Button>
           </Link>
-        </Box>
+        )}
       </Box>
-    </Center>
+    </Box>
   );
 }
