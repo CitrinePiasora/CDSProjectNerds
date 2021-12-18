@@ -28,7 +28,7 @@ const Index = () => {
   useEffect(() => {
     axios({
       method: "get",
-      url: `http://${process.env.BE_URL}/api/beatmaps/${beatmapset_id}`,
+      url: `http://${process.env.BE_URL}/beatmaps/${beatmapset_id}`,
     })
       .then((res) => {
         setBeatmaps(res.data.data.beatmaps);

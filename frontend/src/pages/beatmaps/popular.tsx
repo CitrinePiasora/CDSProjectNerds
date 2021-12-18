@@ -32,7 +32,7 @@ const BMPopular = () => {
   const fetchData = async () => {
     try {
       const res = await axios.get(
-        `http://${process.env.BE_URL}/api/beatmaps/popular?page=${currentPage}&limit=6`
+        `http://${process.env.BE_URL}/beatmaps/popular?page=${currentPage}&limit=6`
       );
       setBeatmaps([...beatmaps, ...res.data.data.beatmaps]);
       setHasMoreItems(res.data.data.beatmaps.length > 0);

@@ -78,7 +78,7 @@ const Predict = () => {
     try {
       const res = await axios({
         method: "post",
-        url: `http://${process.env.BE_URL}/api/predict`,
+        url: `http://${process.env.BE_URL}/predict`,
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
