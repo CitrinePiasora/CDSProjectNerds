@@ -1,3 +1,4 @@
+import sqlalchemy
 import torch
 import humanize
 from pathlib import Path
@@ -104,7 +105,7 @@ classification_model.load_state_dict(
 async def startup():
     # create db tables
     async with engine.begin() as conn:
-        await conn.run_sync(BeatmapDB.metadata.drop_all)
+        # await conn.run_sync(BeatmapDB.metadata.drop_all)
         await conn.run_sync(BeatmapDB.metadata.create_all)
 
 
@@ -237,6 +238,21 @@ async def get_beatmaps_popular(limit: int = 10, page: int = 1):
                 code=APIStatusCode.SUCCESS,
                 message="Successfully retrieved popular beatmaps!",
                 data={"beatmaps": beatmaps},
+            )
+
+
+@app.get("/beatmaps/preview", tags=["beatmaps"], response_model=DefaultResponse)
+async def get_beatmaps_preview():
+    """
+    Get six beatmaps for each category (popular, recently uploaded, recently updated).
+    """
+    async with async_session() as session:
+        async with session.begin():
+            beatmaps = await BeatmapDBDAL(session).get_beatmaps_preview()
+            return DefaultResponse(
+                code=APIStatusCode.SUCCESS,
+                message="Successfully retrieved preview beatmaps!",
+                data=beatmaps,
             )
 
 

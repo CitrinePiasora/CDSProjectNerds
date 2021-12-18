@@ -45,6 +45,19 @@ class Beatmap(Base):
     )
 
 
+SIMPLE_COLUMNS = [
+    Beatmap.beatmap_id,
+    Beatmap.beatmapset_id,
+    Beatmap.artist,
+    Beatmap.title,
+    Beatmap.creator,
+    Beatmap.version,
+    Beatmap.view_count,
+    Beatmap.created_at,
+    Beatmap.updated_at,
+]
+
+
 # Beatmap Data Access Layer
 class BeatmapDAL:
     def __init__(self, db_session: Session):
@@ -125,12 +138,24 @@ class BeatmapDAL:
         :return: List of all beatmaps
         """
         q = await self.db_session.execute(
-            select(Beatmap)
+            select(*SIMPLE_COLUMNS)
             .order_by(desc(Beatmap.updated_at))
             .offset(offset)
             .limit(limit)
         )
-        return q.scalars().all()
+        beatmaps = []
+        for beatmap_id, beatmapset_id, artist, title, creator, version, *_ in q:
+            beatmaps.append(
+                {
+                    "beatmap_id": beatmap_id,
+                    "beatmapset_id": beatmapset_id,
+                    "artist": artist,
+                    "title": title,
+                    "creator": creator,
+                    "version": version,
+                }
+            )
+        return beatmaps
 
     async def get_beatmaps_recent(self, limit, offset) -> List[Beatmap]:
         """
@@ -138,12 +163,24 @@ class BeatmapDAL:
         :return: List of all beatmaps
         """
         q = await self.db_session.execute(
-            select(Beatmap)
+            select(*SIMPLE_COLUMNS)
             .order_by(desc(Beatmap.created_at))
             .offset(offset)
             .limit(limit)
         )
-        return q.scalars().all()
+        beatmaps = []
+        for beatmap_id, beatmapset_id, artist, title, creator, version, *_ in q:
+            beatmaps.append(
+                {
+                    "beatmap_id": beatmap_id,
+                    "beatmapset_id": beatmapset_id,
+                    "artist": artist,
+                    "title": title,
+                    "creator": creator,
+                    "version": version,
+                }
+            )
+        return beatmaps
 
     async def get_beatmaps_popular(self, limit, offset) -> List[Beatmap]:
         """
@@ -151,12 +188,38 @@ class BeatmapDAL:
         :return: List of all beatmaps
         """
         q = await self.db_session.execute(
-            select(Beatmap)
+            select(*SIMPLE_COLUMNS)
             .order_by(desc(Beatmap.view_count))
             .offset(offset)
             .limit(limit)
         )
-        return q.scalars().all()
+        beatmaps = []
+        for beatmap_id, beatmapset_id, artist, title, creator, version, *_ in q:
+            beatmaps.append(
+                {
+                    "beatmap_id": beatmap_id,
+                    "beatmapset_id": beatmapset_id,
+                    "artist": artist,
+                    "title": title,
+                    "creator": creator,
+                    "version": version,
+                }
+            )
+        return beatmaps
+
+    async def get_beatmaps_preview(self) -> List[Beatmap]:
+        """
+        Get six beatmaps for each category (popular, recently uploaded, recently updated).
+        :return: List of beatmaps
+        """
+        bPop = await self.get_beatmaps_popular(6, 0)
+        bRUpl = await self.get_beatmaps_recent(6, 0)
+        bRUpd = await self.get_beatmaps(6, 0)
+        return {
+            "bPop": bPop,
+            "bRUpl": bRUpl,
+            "bRUpd": bRUpd,
+        }
 
     async def get_beatmap_by_set(self, beatmapset_id: int) -> List[Beatmap]:
         """
@@ -165,9 +228,21 @@ class BeatmapDAL:
         :return: Beatmap
         """
         q = await self.db_session.execute(
-            select(Beatmap).where(Beatmap.beatmapset_id == beatmapset_id)
+            select(*SIMPLE_COLUMNS).where(Beatmap.beatmapset_id == beatmapset_id)
         )
-        return q.scalars().all()
+        beatmaps = []
+        for beatmap_id, beatmapset_id, artist, title, creator, version, *_ in q:
+            beatmaps.append(
+                {
+                    "beatmap_id": beatmap_id,
+                    "beatmapset_id": beatmapset_id,
+                    "artist": artist,
+                    "title": title,
+                    "creator": creator,
+                    "version": version,
+                }
+            )
+        return beatmaps
 
     async def get_beatmap_by_set_and_id(
         self, beatmapset_id: int, beatmap_id: int

@@ -4,8 +4,20 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class BeatmapSimple(BaseModel):
+    # id: int
+    beatmap_id: int
+    beatmapset_id: int
+    artist: str
+    title: str
+    creator: str
+    version: str
+
+    class Config:
+        orm_mode = True
+
+
 class Beatmap(BaseModel):
-    id: int
     beatmap_id: int
     beatmapset_id: int
     artist: str
@@ -21,9 +33,9 @@ class Beatmap(BaseModel):
     stream_p: float
     tech_p: float
 
-    view_count: int
-    created_at: datetime
-    updated_at: datetime
+    # view_count: int
+    # created_at: datetime
+    # updated_at: datetime
 
     class Config:
         orm_mode = True
@@ -32,7 +44,13 @@ class Beatmap(BaseModel):
 class DefaultResponse(BaseModel):
     code: int
     message: str
-    data: Optional[Union[dict[str, List[Beatmap]], dict[str, Beatmap], dict]]
+    data: Optional[
+        Union[
+            dict[str, List[Union[Beatmap, BeatmapSimple]]],
+            dict[str, Union[Beatmap, BeatmapSimple]],
+            dict,
+        ]
+    ]
 
 
 class ExceptionResponse(BaseModel):
