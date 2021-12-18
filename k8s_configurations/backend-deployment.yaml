@@ -25,7 +25,7 @@ spec:
             - name: DB_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: db-configmap
+                  name: configmaps
                   key: database-url
             - name: DB_NAME
               value: osuclassy
@@ -34,7 +34,7 @@ spec:
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
-                  name: db-secret
+                  name: secrets
                   key: postgres-password
 ---
 apiVersion: v1

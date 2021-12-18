@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osuclassy-frontend-deployment
+  namespace: osuclassy-dev
+  labels:
+    app: osuclassy-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: osuclassy-frontend
+  template:
+    metadata:
+      labels:
+        app: osuclassy-frontend
+    spec:
+      containers:
+        - name: osuclassy-frontend
+          image: fauzanardh/osuclassy-frontend
+          imagePullPolicy: Never # Will error out if not set, because the image is build locally
+          ports:
+            - containerPort: 3000
+          env:
+            - name: BE_URL
+              value: api.osuclassy-dev.com
+              # valueFrom:
+              #   configMapKeyRef:
+              #     name: configmaps
+              #     key: backend-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osuclassy-frontend-service
+  namespace: osuclassy-dev
+spec:
+  selector:
+    app: osuclassy-frontend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
