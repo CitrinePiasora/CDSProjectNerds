@@ -23,7 +23,7 @@ import {
 import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
 import { BeatmapResponseFull, PredictionChartData } from "../../../types";
-import { DEFAULT_PREDICTION_CHART_DATA } from "../../../const";
+import { DEFAULT_BEATMAP, DEFAULT_PREDICTION_CHART_DATA } from "../../../const";
 
 const Index = () => {
   const router = useRouter();
@@ -37,7 +37,7 @@ const Index = () => {
   const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
   const chartColor = useColorModeValue("#4a5568", "#ffffff");
 
-  const [beatmap, setBeatmap] = useState<BeatmapResponseFull | null>(null);
+  const [beatmap, setBeatmap] = useState<BeatmapResponseFull>(DEFAULT_BEATMAP);
   const [chartData, setChartData] = useState<PredictionChartData>(
     DEFAULT_PREDICTION_CHART_DATA
   );
@@ -100,7 +100,7 @@ const Index = () => {
             Beatmap
           </Heading>
           <Text fontSize={"xl"} textAlign={"center"}>
-            Last updated: {beatmap.updated_at}
+            Last updated: {beatmap.updated_at ?? "Unknown"}
           </Text>
         </Box>
         <Box
