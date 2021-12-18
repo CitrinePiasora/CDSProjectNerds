@@ -38,7 +38,7 @@ class Beatmap(Base):
     tech_p = Column(Float, nullable=False)
 
     # Stats
-    view_count = Column(Integer, server_default="0", nullable=False)
+    view_count = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -113,6 +113,7 @@ class BeatmapDAL:
                 stamina_p=stamina,
                 stream_p=stream,
                 tech_p=tech,
+                view_count=0,
             )
             self.db_session.add(new_beatmap)
             await self.db_session.commit()
