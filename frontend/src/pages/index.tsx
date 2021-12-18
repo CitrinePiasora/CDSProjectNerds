@@ -26,10 +26,11 @@ export const getStaticProps: GetStaticProps = async () => {
     });
     return {
       props: out.data.data,
+      revalidate: 60,
     };
   } catch (err) {
     console.error(err);
-    return { props: { bRUpd: [], bRUpl: [], bPop: [] } };
+    return { props: { bRUpd: [], bRUpl: [], bPop: [] }, revalidate: 60 };
   }
 };
 
