@@ -236,7 +236,7 @@ async def get_beatmaps_popular(limit: int = 10, page: int = 1):
     # If value is negative, return the first page
     offset = limit * (page - 1)
     offset = offset if offset >= 0 else 0
-    
+
     async with async_session() as session:
         async with session.begin():
             beatmaps = await BeatmapDBDAL(session).get_beatmaps_popular(limit, offset)
@@ -374,7 +374,7 @@ async def predict_map(file: UploadFile = File(...)):
         data={
             "processing_time": end,
             "beatmap_id": bm.sections["Metadata"]["BeatmapID"],
-            "beatmap_set_id": bm.sections["Metadata"]["BeatmapSetID"],
+            "beatmapset_id": bm.sections["Metadata"]["BeatmapSetID"],
             "artist": bm.sections["Metadata"]["Artist"],
             "title": bm.sections["Metadata"]["Title"],
             "creator": bm.sections["Metadata"]["Creator"],
