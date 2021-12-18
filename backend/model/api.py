@@ -34,8 +34,8 @@ class Beatmap(BaseModel):
     tech_p: float
 
     # view_count: int
-    # created_at: datetime
-    # updated_at: datetime
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
