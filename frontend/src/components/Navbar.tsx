@@ -286,14 +286,14 @@ const NAV_ITEMS: Array<NavItem> = [
     href: "/beatmaps",
     children: [
       {
-        label: "Recent",
-        subLabel: "Browse the recently predicted beatmaps",
-        href: "/beatmaps/recent",
-      },
-      {
         label: "Popular",
         subLabel: "Browse the most visited beatmaps",
         href: "/beatmaps/popular",
+      },
+      {
+        label: "Recent",
+        subLabel: "Browse the recently predicted beatmaps",
+        href: "/beatmaps/recent",
       },
     ],
   },
