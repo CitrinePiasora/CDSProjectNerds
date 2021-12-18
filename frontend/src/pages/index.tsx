@@ -16,30 +16,32 @@ import axios from "axios";
 
 import { Container } from "../components/Container";
 import BeatmapInfo from "../components/BeatmapInfo";
+import { useEffect, useState } from "react";
+import { BeatmapResponse } from "../types";
 
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const out = await axios({
-      method: "get",
-      url: `http://api.osuclassy-dev.com/beatmaps/preview`,
-    });
-    return {
-      props: out.data.data,
-      revalidate: 60,
-    };
-  } catch (err) {
-    console.error(err);
-    return { props: { bRUpd: [], bRUpl: [], bPop: [] }, revalidate: 60 };
-  }
-};
-
-const Index = ({
-  bRUpd,
-  bRUpl,
-  bPop,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
+const Index = () => {
   const bg = useColorModeValue("white", "gray.800");
   const mainColor = useColorModeValue("osu.600", "osu.300");
+
+  const [bRUpd, setBRUpd] = useState<BeatmapResponse[]>([]);
+  const [bRUpl, setBRUpl] = useState<BeatmapResponse[]>([]);
+  const [bPop, setBPop] = useState<BeatmapResponse[]>([]);
+
+  useEffect(() => {
+    axios({
+      method: "get",
+      url: `http://api.osuclassy-dev.com/beatmaps/preview`,
+    })
+      .then((res) => {
+        setBRUpd(res.data.data.bRUpd);
+        setBRUpl(res.data.data.bRUpl);
+        setBPop(res.data.data.bPop);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
   return (
     <>
       <Head>
