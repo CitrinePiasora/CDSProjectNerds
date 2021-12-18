@@ -9,22 +9,13 @@ import {
   Link,
   Flex,
 } from "@chakra-ui/react";
-
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-
-interface BeatmapResponse {
-  beatmap_id: number;
-  beatmapset_id: number;
-  artist: string;
-  title: string;
-  creator: string;
-  version: string;
-}
+import { BeatmapResponse } from "../../../types";
 
 const Index = () => {
   const bg = useColorModeValue("white", "gray.800");

@@ -16,16 +16,9 @@ import Head from "next/head";
 import NextLink from "next/link";
 import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import BeatmapInfo from "../../components/BeatmapInfo";
 
-interface BeatmapResponse {
-  beatmap_id: number;
-  beatmapset_id: number;
-  artist: string;
-  title: string;
-  creator: string;
-  version: string;
-}
+import BeatmapInfo from "../../components/BeatmapInfo";
+import { BeatmapResponse } from "../../types";
 
 const BMPopular = () => {
   // ChakraUI colors

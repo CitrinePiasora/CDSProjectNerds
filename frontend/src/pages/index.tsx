@@ -12,7 +12,6 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { StarIcon } from "@chakra-ui/icons";
-
 import axios from "axios";
 
 import { Container } from "../components/Container";

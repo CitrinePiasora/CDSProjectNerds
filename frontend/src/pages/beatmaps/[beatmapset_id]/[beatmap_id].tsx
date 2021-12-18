@@ -1,10 +1,13 @@
 import Head from "next/head";
-import { Box, useColorModeValue, Stack } from "@chakra-ui/react";
-
+import {
+  Box,
+  useColorModeValue,
+  Stack,
+  Heading,
+  Text,
+  Link,
+} from "@chakra-ui/react";
 import axios from "axios";
-
-import { Container } from "../../../components/Container";
-import BeatmapInfo from "../../../components/BeatmapInfo";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
@@ -17,35 +20,10 @@ import {
   YAxis,
 } from "recharts";
 
-interface BeatmapResponse {
-  beatmap_id: number;
-  beatmapset_id: number;
-  artist: string;
-  title: string;
-  creator: string;
-  version: string;
-  alternate_p: number;
-  fingercontrol_p: number;
-  jump_p: number;
-  speed_p: number;
-  stamina_p: number;
-  stream_p: number;
-  tech_p: number;
-}
-interface PredictionChartData {
-  data: { [key: string]: string | number }[];
-}
-const DEFAULT_PREDICTION_CHART_DATA: PredictionChartData = {
-  data: [
-    { name: "Alternate", value: 0.0 },
-    { name: "Finger Control", value: 0.0 },
-    { name: "Jump", value: 0.0 },
-    { name: "Speed", value: 0.0 },
-    { name: "Stamina", value: 0.0 },
-    { name: "Stream", value: 0.0 },
-    { name: "Tech", value: 0.0 },
-  ],
-};
+import { Container } from "../../../components/Container";
+import BeatmapInfo from "../../../components/BeatmapInfo";
+import { BeatmapResponseFull, PredictionChartData } from "../../../types";
+import { DEFAULT_PREDICTION_CHART_DATA } from "../../../const";
 
 const Index = () => {
   const router = useRouter();
@@ -53,12 +31,13 @@ const Index = () => {
 
   // ChakraUI colors
   const bg = useColorModeValue("white", "gray.800");
+  const mainColor = useColorModeValue("osu.600", "osu.300");
 
   // Google chart colors
   const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
   const chartColor = useColorModeValue("#4a5568", "#ffffff");
 
-  const [beatmap, setBeatmap] = useState<BeatmapResponse | null>(null);
+  const [beatmap, setBeatmap] = useState<BeatmapResponseFull | null>(null);
   const [chartData, setChartData] = useState<PredictionChartData>(
     DEFAULT_PREDICTION_CHART_DATA
   );
@@ -80,17 +59,17 @@ const Index = () => {
           data: [
             {
               name: "Alternate",
-              value: res.data.data.predicted_type.alternate,
+              value: res.data.data.beatmap.alternate_p,
             },
             {
               name: "Finger Control",
-              value: res.data.data.predicted_type.fingercontrol,
+              value: res.data.data.beatmap.fingercontrol_p,
             },
-            { name: "Jump", value: res.data.data.predicted_type.jump },
-            { name: "Speed", value: res.data.data.predicted_type.speed },
-            { name: "Stamina", value: res.data.data.predicted_type.stamina },
-            { name: "Stream", value: res.data.data.predicted_type.stream },
-            { name: "Tech", value: res.data.data.predicted_type.tech },
+            { name: "Jump", value: res.data.data.beatmap.jump_p },
+            { name: "Speed", value: res.data.data.beatmap.speed_p },
+            { name: "Stamina", value: res.data.data.beatmap.stamina_p },
+            { name: "Stream", value: res.data.data.beatmap.stream_p },
+            { name: "Tech", value: res.data.data.beatmap.tech_p },
           ],
         });
       })
@@ -112,6 +91,18 @@ const Index = () => {
         />
       </Head>
       <Container>
+        <Box py={10} px={5}>
+          <Heading fontSize="6xl" textAlign={"center"}>
+            Predicted{" "}
+            <Link href="https://osu.ppy.sh/" color={mainColor}>
+              osu!
+            </Link>{" "}
+            Beatmap
+          </Heading>
+          <Text fontSize={"xl"} textAlign={"center"}>
+            Last updated: {beatmap.updated_at}
+          </Text>
+        </Box>
         <Box
           marginBottom={{ base: 10, sm: 16, md: 24 }}
           px={5}
@@ -121,29 +112,31 @@ const Index = () => {
           boxShadow={"2xl"}
         >
           <Stack direction={["column", "row"]}>
-            <ResponsiveContainer width={"100%"} height={400}>
-              <BarChart
-                data={chartData.data}
-                layout={"vertical"}
-                margin={{ left: 20, right: 15, top: 40 }}
-              >
-                <XAxis
-                  type={"number"}
-                  domain={[0.0, 1.0]}
-                  stroke={chartColor}
-                  reversed
-                />
-                <YAxis
-                  type={"category"}
-                  dataKey={"name"}
-                  orientation={"right"}
-                  stroke={chartColor}
-                ></YAxis>
-                <Tooltip />
-                <CartesianGrid horizontal={false} />
-                <Bar dataKey={"value"} fill={chartAxisColor} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Box minW={{ base: "xs", md: "xl" }}>
+              <ResponsiveContainer width={"100%"} height={400}>
+                <BarChart
+                  data={chartData.data}
+                  layout={"vertical"}
+                  margin={{ left: 20, right: 15, top: 40 }}
+                >
+                  <XAxis
+                    type={"number"}
+                    domain={[0.0, 1.0]}
+                    stroke={chartColor}
+                    reversed
+                  />
+                  <YAxis
+                    type={"category"}
+                    dataKey={"name"}
+                    orientation={"right"}
+                    stroke={chartColor}
+                  ></YAxis>
+                  <Tooltip />
+                  <CartesianGrid horizontal={false} />
+                  <Bar dataKey={"value"} fill={chartAxisColor} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
             <Box
               px={5}
               py={10}

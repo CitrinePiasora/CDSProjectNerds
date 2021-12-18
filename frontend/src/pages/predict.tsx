@@ -14,9 +14,6 @@ import {
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
-
-import { Container } from "../components/Container";
-import BeatmapInfo from "../components/BeatmapInfo";
 import Head from "next/head";
 import {
   Bar,
@@ -28,38 +25,10 @@ import {
   YAxis,
 } from "recharts";
 
-const MAX_FILE_SIZE = 5 * 1000 * 1000;
-
-interface PredictionResponse {
-  processing_time: string;
-  beatmap_id: number;
-  beatmapset_id: number;
-  artist: string;
-  title: string;
-  creator: string;
-  version: string;
-  predicted_type: { [key: string]: number };
-}
-interface APIResponse {
-  code: number;
-  message: string;
-  data: PredictionResponse;
-}
-
-interface PredictionChartData {
-  data: { [key: string]: string | number }[];
-}
-const DEFAULT_PREDICTION_CHART_DATA: PredictionChartData = {
-  data: [
-    { name: "Alternate", value: 0.0 },
-    { name: "Finger Control", value: 0.0 },
-    { name: "Jump", value: 0.0 },
-    { name: "Speed", value: 0.0 },
-    { name: "Stamina", value: 0.0 },
-    { name: "Stream", value: 0.0 },
-    { name: "Tech", value: 0.0 },
-  ],
-};
+import { Container } from "../components/Container";
+import BeatmapInfo from "../components/BeatmapInfo";
+import { APIResponse, PredictionChartData } from "../types";
+import { DEFAULT_PREDICTION_CHART_DATA, MAX_FILE_SIZE } from "../const";
 
 const Predict = () => {
   // ChakraUI colors
