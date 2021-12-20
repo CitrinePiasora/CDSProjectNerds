@@ -23,7 +23,11 @@ import {
 import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
 import { BeatmapResponseFull, PredictionChartData } from "../../../types";
-import { DEFAULT_BEATMAP, DEFAULT_PREDICTION_CHART_DATA } from "../../../const";
+import {
+  DEFAULT_BEATMAP,
+  DEFAULT_PREDICTION_CHART_DATA,
+  MAP_TYPENAME,
+} from "../../../const";
 
 const Index = () => {
   const router = useRouter();
@@ -37,6 +41,7 @@ const Index = () => {
   const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
   const chartColor = useColorModeValue("#4a5568", "#ffffff");
 
+  const [mapTypesStr, setMapTypeStr] = useState("");
   const [beatmap, setBeatmap] = useState<BeatmapResponseFull>(DEFAULT_BEATMAP);
   const [chartData, setChartData] = useState<PredictionChartData>(
     DEFAULT_PREDICTION_CHART_DATA
@@ -54,6 +59,17 @@ const Index = () => {
       url: `http://api.osuclassy-dev.com/beatmaps/${beatmapset_id}/${beatmap_id}`,
     })
       .then((res) => {
+        const mapType = Object.keys(res.data.data.beatmap)
+          .map((v) => {
+            if (v.endsWith("_p")) {
+              if (res.data.data.beatmap[v] >= 0.5) {
+                return `${MAP_TYPENAME[v.replace("_p", "")]}`;
+              }
+            }
+            return null;
+          })
+          .filter((v) => v !== null);
+        setMapTypeStr(mapType.join(", "));
         setBeatmap(res.data.data.beatmap);
         setChartData({
           data: [
@@ -155,6 +171,9 @@ const Index = () => {
               )}
             </Box>
           </Stack>
+          <Box marginLeft={5} marginBottom={5} width={"100%"}>
+            <Text>Map type: {mapTypesStr}</Text>
+          </Box>
         </Box>
       </Container>
     </>

@@ -29,3 +29,12 @@ export const DEFAULT_BEATMAP: BeatmapResponseFull = {
   updated_at: "",
 };
 export const MAX_FILE_SIZE = 5 * 1000 * 1000;
+export const MAP_TYPENAME = {
+  alternate: "Alternate",
+  fingercontrol: "Finger Control",
+  jump: "Jump",
+  speed: "Speed",
+  stamina: "Stamina",
+  stream: "Stream",
+  tech: "Tech",
+};

@@ -11,7 +11,7 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import Head from "next/head";
@@ -28,7 +28,11 @@ import {
 import { Container } from "../components/Container";
 import BeatmapInfo from "../components/BeatmapInfo";
 import { APIResponse, PredictionChartData } from "../types";
-import { DEFAULT_PREDICTION_CHART_DATA, MAX_FILE_SIZE } from "../const";
+import {
+  DEFAULT_PREDICTION_CHART_DATA,
+  MAX_FILE_SIZE,
+  MAP_TYPENAME,
+} from "../const";
 
 const Predict = () => {
   // ChakraUI colors
@@ -43,10 +47,27 @@ const Predict = () => {
   const [isProcessing, setProcessing] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [mapTypesStr, setMapTypeStr] = useState("");
   const [prediction, setPrediction] = useState<APIResponse | null>(null);
   const [chartData, setChartData] = useState<PredictionChartData>(
     DEFAULT_PREDICTION_CHART_DATA
   );
+
+  useEffect(() => {
+    if (prediction) {
+      const mapType = Object.keys(prediction.data.predicted_type)
+        .map((v) => {
+          if (prediction.data.predicted_type[v] >= 0.5) {
+            return `${MAP_TYPENAME[v]}`;
+          } else {
+            return null;
+          }
+        })
+        .filter((v) => v !== null);
+      setMapTypeStr(mapType.join(", "));
+    }
+  }, [prediction]);
+
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles?.[0];
     if (!file) {
@@ -202,6 +223,9 @@ const Predict = () => {
               )}
             </Box>
           </Stack>
+          <Box marginLeft={5} width={"100%"}>
+            <Text>Map type: {mapTypesStr}</Text>
+          </Box>
           <Center>
             <VStack width={"100%"} m={10}>
               {prediction !== null && showSuccessMessage && (
