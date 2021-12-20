@@ -16,10 +16,9 @@ import axios from "axios";
 import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
 import { BeatmapResponse } from "../../../types";
+import { BACKGROUND_COLOR } from "../../../const";
 
 const Index = () => {
-  const bg = useColorModeValue("white", "gray.800");
-
   const router = useRouter();
   const { beatmapset_id } = router.query;
 
@@ -56,7 +55,7 @@ const Index = () => {
         <VStack spacing={5} m={5}>
           <Box
             borderWidth="1"
-            bgColor={bg}
+            bgColor={BACKGROUND_COLOR}
             boxShadow={"2xl"}
             p={5}
             minW={{ base: "xs", md: "xl" }}
@@ -69,7 +68,7 @@ const Index = () => {
               </Flex>
               <Box
                 borderWidth="1"
-                bgColor={bg}
+                bgColor={BACKGROUND_COLOR}
                 boxShadow={"lg"}
                 p={5}
                 w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}

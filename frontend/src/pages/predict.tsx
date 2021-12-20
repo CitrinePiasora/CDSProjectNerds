@@ -28,17 +28,16 @@ import {
 import { Container } from "../components/Container";
 import BeatmapInfo from "../components/BeatmapInfo";
 import { APIResponse, PredictionChartData } from "../types";
-import { DEFAULT_PREDICTION_CHART_DATA, MAX_FILE_SIZE } from "../const";
+import {
+  BACKGROUND_COLOR,
+  CHART_AXIS_COLOR,
+  CHART_COLOR,
+  DEFAULT_PREDICTION_CHART_DATA,
+  MAIN_COLOR,
+  MAX_FILE_SIZE,
+} from "../const";
 
 const Predict = () => {
-  // ChakraUI colors
-  const bg = useColorModeValue("white", "gray.800");
-  const mainColor = useColorModeValue("osu.600", "osu.300");
-
-  // Google chart colors
-  const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
-  const chartColor = useColorModeValue("#4a5568", "#ffffff");
-
   const [isError, setError] = useState(false);
   const [isProcessing, setProcessing] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -141,7 +140,7 @@ const Predict = () => {
         <Box py={10} px={5}>
           <Heading fontSize="6xl" textAlign={"center"}>
             Predict{" "}
-            <Link href="https://osu.ppy.sh/" color={mainColor}>
+            <Link href="https://osu.ppy.sh/" color={MAIN_COLOR}>
               osu!
             </Link>{" "}
             Beatmap
@@ -155,7 +154,7 @@ const Predict = () => {
           px={5}
           shadow="md"
           borderWidth="1"
-          bgColor={bg}
+          bgColor={BACKGROUND_COLOR}
           boxShadow={"2xl"}
         >
           <Stack direction={["column", "row"]}>
@@ -169,18 +168,18 @@ const Predict = () => {
                   <XAxis
                     type={"number"}
                     domain={[0.0, 1.0]}
-                    stroke={chartColor}
+                    stroke={CHART_COLOR}
                     reversed
                   />
                   <YAxis
                     type={"category"}
                     dataKey={"name"}
                     orientation={"right"}
-                    stroke={chartColor}
+                    stroke={CHART_COLOR}
                   ></YAxis>
                   <Tooltip />
                   <CartesianGrid horizontal={false} />
-                  <Bar dataKey={"value"} fill={chartAxisColor} />
+                  <Bar dataKey={"value"} fill={CHART_AXIS_COLOR} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
@@ -220,10 +219,10 @@ const Predict = () => {
                 w={"100%"}
                 px={{ base: 10, md: 25 }}
                 py={50}
-                bg={bg}
+                bg={BACKGROUND_COLOR}
                 borderRadius={5}
                 borderWidth={2}
-                borderColor={mainColor}
+                borderColor={MAIN_COLOR}
                 textAlign="center"
                 {...getRootProps()}
               >

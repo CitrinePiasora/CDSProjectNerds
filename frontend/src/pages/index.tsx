@@ -18,11 +18,9 @@ import { Container } from "../components/Container";
 import BeatmapInfo from "../components/BeatmapInfo";
 import { useEffect, useState } from "react";
 import { BeatmapResponse } from "../types";
+import { BACKGROUND_COLOR, MAIN_COLOR } from "../const";
 
 const Index = () => {
-  const bg = useColorModeValue("white", "gray.800");
-  const mainColor = useColorModeValue("osu.600", "osu.300");
-
   const [bRUpd, setBRUpd] = useState<BeatmapResponse[]>([]);
   const [bRUpl, setBRUpl] = useState<BeatmapResponse[]>([]);
   const [bPop, setBPop] = useState<BeatmapResponse[]>([]);
@@ -57,7 +55,7 @@ const Index = () => {
         <VStack spacing={5} m={5}>
           <Box
             borderWidth="1"
-            bgColor={bg}
+            bgColor={BACKGROUND_COLOR}
             boxShadow={"2xl"}
             p={5}
             minW={{ base: "xs", md: "xl" }}
@@ -65,7 +63,7 @@ const Index = () => {
             <VStack>
               <Flex w={"100%"}>
                 <Heading fontSize="4xl" p={5}>
-                  Popular <StarIcon color={mainColor} />
+                  Popular <StarIcon color={MAIN_COLOR} />
                 </Heading>
                 <NextLink href={"/beatmaps/popular"} passHref>
                   <Link
@@ -87,7 +85,7 @@ const Index = () => {
               </Flex>
               <Box
                 borderWidth="1"
-                bgColor={bg}
+                bgColor={BACKGROUND_COLOR}
                 boxShadow={"lg"}
                 p={5}
                 w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}
@@ -126,7 +124,7 @@ const Index = () => {
           </Box>
           <Box
             borderWidth="1"
-            bgColor={bg}
+            bgColor={BACKGROUND_COLOR}
             boxShadow={"2xl"}
             p={5}
             minW={{ base: "xs", md: "xl" }}
@@ -156,7 +154,7 @@ const Index = () => {
               </Flex>
               <Box
                 borderWidth="1"
-                bgColor={bg}
+                bgColor={BACKGROUND_COLOR}
                 boxShadow={"lg"}
                 p={5}
                 w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}
@@ -195,7 +193,7 @@ const Index = () => {
           </Box>
           <Box
             borderWidth="1"
-            bgColor={bg}
+            bgColor={BACKGROUND_COLOR}
             boxShadow={"2xl"}
             p={5}
             minW={{ base: "xs", md: "xl" }}
@@ -206,7 +204,7 @@ const Index = () => {
               </Heading>
               <Box
                 borderWidth="1"
-                bgColor={bg}
+                bgColor={BACKGROUND_COLOR}
                 boxShadow={"lg"}
                 p={5}
                 w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}

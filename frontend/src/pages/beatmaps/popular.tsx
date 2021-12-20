@@ -18,13 +18,10 @@ import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import BeatmapInfo from "../../components/BeatmapInfo";
+import { BACKGROUND_COLOR, MAIN_COLOR } from "../../const";
 import { BeatmapResponse } from "../../types";
 
 const BMPopular = () => {
-  // ChakraUI colors
-  const bg = useColorModeValue("white", "gray.800");
-  const mainColor = useColorModeValue("osu.600", "osu.300");
-
   const [hasMoreItems, setHasMoreItems] = useState(true);
   const [beatmaps, setBeatmaps] = useState<BeatmapResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,7 +59,7 @@ const BMPopular = () => {
         <VStack spacing={5} m={5}>
           <Box
             borderWidth="1"
-            bgColor={bg}
+            bgColor={BACKGROUND_COLOR}
             boxShadow={"2xl"}
             p={5}
             minW={{ base: "xs", md: "xl" }}
@@ -70,12 +67,12 @@ const BMPopular = () => {
             <VStack>
               <Flex w={"100%"}>
                 <Heading fontSize="4xl" p={5}>
-                  Popular <StarIcon color={mainColor} />
+                  Popular <StarIcon color={MAIN_COLOR} />
                 </Heading>
               </Flex>
               <Box
                 borderWidth="1"
-                bgColor={bg}
+                bgColor={BACKGROUND_COLOR}
                 boxShadow={"lg"}
                 p={5}
                 w={{ base: "xs", sm: "2xl", md: "4xl", xl: "6xl" }}
