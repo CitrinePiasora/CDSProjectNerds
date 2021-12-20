@@ -1,4 +1,3 @@
-import { useColorModeValue } from "@chakra-ui/react";
 import { BeatmapResponseFull, PredictionChartData } from "./types";
 
 export const DEFAULT_PREDICTION_CHART_DATA: PredictionChartData = {
@@ -30,11 +29,3 @@ export const DEFAULT_BEATMAP: BeatmapResponseFull = {
   updated_at: "",
 };
 export const MAX_FILE_SIZE = 5 * 1000 * 1000;
-
-// Colors
-// - ChakraUI colors
-export const BACKGROUND_COLOR = useColorModeValue("white", "gray.800");
-export const MAIN_COLOR = useColorModeValue("osu.600", "osu.300");
-// - Chart colors
-export const CHART_AXIS_COLOR = useColorModeValue("#ff5ea3", "#ff94c4");
-export const CHART_COLOR = useColorModeValue("#4a5568", "#ffffff");

@@ -23,18 +23,20 @@ import {
 import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
 import { BeatmapResponseFull, PredictionChartData } from "../../../types";
-import {
-  BACKGROUND_COLOR,
-  CHART_AXIS_COLOR,
-  CHART_COLOR,
-  DEFAULT_BEATMAP,
-  DEFAULT_PREDICTION_CHART_DATA,
-  MAIN_COLOR,
-} from "../../../const";
+import { DEFAULT_BEATMAP, DEFAULT_PREDICTION_CHART_DATA } from "../../../const";
 
 const Index = () => {
   const router = useRouter();
   const { beatmapset_id, beatmap_id } = router.query;
+
+  // ChakraUI colors
+  const bg = useColorModeValue("white", "gray.800");
+  const mainColor = useColorModeValue("osu.600", "osu.300");
+
+  // Google chart colors
+  const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
+  const chartColor = useColorModeValue("#4a5568", "#ffffff");
+
   const [beatmap, setBeatmap] = useState<BeatmapResponseFull>(DEFAULT_BEATMAP);
   const [chartData, setChartData] = useState<PredictionChartData>(
     DEFAULT_PREDICTION_CHART_DATA
@@ -92,7 +94,7 @@ const Index = () => {
         <Box py={10} px={5}>
           <Heading fontSize="6xl" textAlign={"center"}>
             Predicted{" "}
-            <Link href="https://osu.ppy.sh/" color={MAIN_COLOR}>
+            <Link href="https://osu.ppy.sh/" color={mainColor}>
               osu!
             </Link>{" "}
             Beatmap
@@ -106,7 +108,7 @@ const Index = () => {
           px={5}
           shadow="md"
           borderWidth="1"
-          bgColor={BACKGROUND_COLOR}
+          bgColor={bg}
           boxShadow={"2xl"}
         >
           <Stack direction={["column", "row"]}>
@@ -120,18 +122,18 @@ const Index = () => {
                   <XAxis
                     type={"number"}
                     domain={[0.0, 1.0]}
-                    stroke={CHART_COLOR}
+                    stroke={chartColor}
                     reversed
                   />
                   <YAxis
                     type={"category"}
                     dataKey={"name"}
                     orientation={"right"}
-                    stroke={CHART_COLOR}
+                    stroke={chartColor}
                   ></YAxis>
                   <Tooltip />
                   <CartesianGrid horizontal={false} />
-                  <Bar dataKey={"value"} fill={CHART_AXIS_COLOR} />
+                  <Bar dataKey={"value"} fill={chartAxisColor} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
