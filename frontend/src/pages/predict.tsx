@@ -140,7 +140,18 @@ const Predict = () => {
       }, 5000);
     }
   }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: ".osu",
+    onDropRejected: () => {
+      setError(true);
+      setErrorMessage("Only .osu file is supported.");
+      window.setTimeout(() => {
+        setError(false);
+        setErrorMessage("");
+      }, 5000);
+    },
+  });
 
   return (
     <>
@@ -248,10 +259,10 @@ const Predict = () => {
                 borderRadius={5}
                 borderWidth={2}
                 borderColor={mainColor}
-                textAlign="center"
+                textAlign={"center"}
                 {...getRootProps()}
               >
-                <input accept=".osu" {...getInputProps()} />
+                <input {...getInputProps()} />
                 {isProcessing ? (
                   <Spinner />
                 ) : isDragActive ? (
