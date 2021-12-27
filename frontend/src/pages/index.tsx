@@ -26,7 +26,6 @@ interface Props {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  console.log(process.env.BE_URL);
   try {
     const res = await axios({
       method: "get",
