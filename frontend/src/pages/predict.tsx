@@ -12,6 +12,7 @@ import {
   Stack,
   Text,
   useColorModeValue,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import { useDropzone } from "react-dropzone";
@@ -44,10 +45,8 @@ const Predict = () => {
   const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
   const chartColor = useColorModeValue("#4a5568", "#ffffff");
 
-  const [isError, setError] = useState(false);
+  const toast = useToast();
   const [isProcessing, setProcessing] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const [mapTypesStr, setMapTypeStr] = useState("");
   const [prediction, setPrediction] = useState<APIResponse | null>(null);
   const [chartData, setChartData] = useState<PredictionChartData>(
@@ -74,24 +73,26 @@ const Predict = () => {
     if (!file) {
       return;
     } else if (file.size > MAX_FILE_SIZE) {
-      setError(true);
-      setErrorMessage("File size can't be more than 5MB.");
-      window.setTimeout(() => {
-        setError(false);
-        setErrorMessage("");
-      }, 5000);
+      toast({
+        title: "File too large",
+        description: `File size must be less than ${MAX_FILE_SIZE / 1000000}MB`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
       return;
     }
     if (
       (file.name.substring(file.name.lastIndexOf(".") + 1, file.name.length) ||
         file.name) !== "osu"
     ) {
-      setError(true);
-      setErrorMessage("Only .osu file is supported.");
-      window.setTimeout(() => {
-        setError(false);
-        setErrorMessage("");
-      }, 5000);
+      toast({
+        title: "Invalid file",
+        description: "Only .osu file is supported.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
       return;
     }
     setProcessing(true);
@@ -121,36 +122,36 @@ const Predict = () => {
           { name: "Tech", value: res.data.data.predicted_type.tech },
         ],
       });
-      setShowSuccessMessage(true);
       setProcessing(false);
-      window.setTimeout(() => {
-        setShowSuccessMessage(false);
-      }, 5000);
+      toast({
+        title: "Success",
+        description: `${prediction.message} Processing time: ${prediction.data.processing_time}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (err) {
-      if (err.response && err.response.status === 400) {
-        setErrorMessage(err.response.data.reason);
-      } else {
-        console.log(err);
-        setErrorMessage("Unknown error");
-      }
-      setError(true);
-      setProcessing(false);
-      window.setTimeout(() => {
-        setError(false);
-        setErrorMessage("");
-      }, 5000);
+      console.log(err);
+      toast({
+        title: "Error",
+        description: err.response?.data?.reason || "Unknown error",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ".osu",
     onDropRejected: () => {
-      setError(true);
-      setErrorMessage("Only .osu file is supported.");
-      window.setTimeout(() => {
-        setError(false);
-        setErrorMessage("");
-      }, 5000);
+      toast({
+        title: "Invalid file",
+        description: "Only .osu file is supported.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     },
   });
 
@@ -240,18 +241,6 @@ const Predict = () => {
           </Box>
           <Center>
             <VStack width={"100%"} m={10}>
-              {prediction !== null && showSuccessMessage && (
-                <Alert status="success" variant="left-accent">
-                  {prediction.message} Processing time:{" "}
-                  {prediction.data.processing_time}
-                </Alert>
-              )}
-              {isError && (
-                <Alert status="error" variant="left-accent">
-                  <AlertIcon />
-                  {errorMessage}
-                </Alert>
-              )}
               <Box
                 w={"100%"}
                 px={{ base: 10, md: 25 }}
