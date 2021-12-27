@@ -38,6 +38,7 @@ export default function BeatmapInfo({
   // 24 is the padding
   // same with 352
   const maxWidth = minified ? "312px" : "352px";
+  const imgWidth = minified ? "360px" : "432px";
   return (
     <Box
       // w={minified ? "360px" : "400px"}
@@ -49,7 +50,9 @@ export default function BeatmapInfo({
     >
       <Image
         h={"120px"}
-        w={"full"}
+        htmlHeight={"120px"}
+        w={imgWidth}
+        htmlWidth={imgWidth}
         src={imgSrc}
         objectFit={"cover"}
         filter={imageBrightness}
