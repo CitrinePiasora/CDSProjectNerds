@@ -1,3 +1,8 @@
+import { useState } from "react";
+import { GetServerSideProps } from "next";
+import Head from "next/head";
+import NextLink from "next/link";
+
 import {
   Box,
   Container,
@@ -10,21 +15,43 @@ import {
   Text,
 } from "@chakra-ui/react";
 import axios from "axios";
-import Head from "next/head";
-import NextLink from "next/link";
-import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import BeatmapInfo from "../../components/BeatmapInfo";
 import { BeatmapResponse } from "../../types";
 
-const BMPopular = () => {
+interface Props {
+  beatmaps: BeatmapResponse[];
+  hasMoreItems: boolean;
+  currentPage: number;
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  try {
+    const res = await axios.get(
+      `http://api.osuclassy-dev.com/beatmaps/recent?page=1&limit=6`
+    );
+    return {
+      props: {
+        beatmaps: res.data.data.beatmaps,
+        hasMoreItems: res.data.data.beatmaps.length > 0,
+        currentPage: 2,
+      },
+    };
+  } catch (err) {
+    return {
+      notFound: true,
+    };
+  }
+};
+
+const BMPopular = (props: Props) => {
   // ChakraUI colors
   const bg = useColorModeValue("white", "gray.800");
 
-  const [hasMoreItems, setHasMoreItems] = useState(true);
-  const [beatmaps, setBeatmaps] = useState<BeatmapResponse[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [beatmaps, setBeatmaps] = useState<BeatmapResponse[]>(props.beatmaps);
+  const [hasMoreItems, setHasMoreItems] = useState(props.hasMoreItems);
+  const [currentPage, setCurrentPage] = useState(props.currentPage);
 
   const fetchData = async () => {
     try {
@@ -38,11 +65,6 @@ const BMPopular = () => {
       console.log(err);
     }
   };
-
-  // Initial data population
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   return (
     <>

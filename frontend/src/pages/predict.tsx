@@ -1,3 +1,6 @@
+import { useCallback, useEffect, useState } from "react";
+import Head from "next/head";
+
 import {
   Alert,
   AlertIcon,
@@ -11,10 +14,8 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
-import Head from "next/head";
 import {
   Bar,
   BarChart,
@@ -39,7 +40,7 @@ const Predict = () => {
   const bg = useColorModeValue("white", "gray.800");
   const mainColor = useColorModeValue("osu.600", "osu.300");
 
-  // Google chart colors
+  // Chart colors
   const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
   const chartColor = useColorModeValue("#4a5568", "#ffffff");
 

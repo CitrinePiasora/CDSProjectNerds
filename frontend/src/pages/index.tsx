@@ -1,6 +1,7 @@
-import { GetStaticProps, InferGetStaticPropsType } from "next";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import NextLink from "next/link";
+
 import {
   Box,
   Grid,
@@ -16,31 +17,38 @@ import axios from "axios";
 
 import { Container } from "../components/Container";
 import BeatmapInfo from "../components/BeatmapInfo";
-import { useEffect, useState } from "react";
 import { BeatmapResponse } from "../types";
 
-const Index = () => {
-  const bg = useColorModeValue("white", "gray.800");
-  const mainColor = useColorModeValue("osu.600", "osu.300");
+interface Props {
+  bRUpd: BeatmapResponse[];
+  bRUpl: BeatmapResponse[];
+  bPop: BeatmapResponse[];
+}
 
-  const [bRUpd, setBRUpd] = useState<BeatmapResponse[]>([]);
-  const [bRUpl, setBRUpl] = useState<BeatmapResponse[]>([]);
-  const [bPop, setBPop] = useState<BeatmapResponse[]>([]);
-
-  useEffect(() => {
-    axios({
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  console.log(process.env.BE_URL);
+  try {
+    const res = await axios({
       method: "get",
       url: `http://api.osuclassy-dev.com/beatmaps/preview`,
-    })
-      .then((res) => {
-        setBRUpd(res.data.data.bRUpd);
-        setBRUpl(res.data.data.bRUpl);
-        setBPop(res.data.data.bPop);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
+    });
+    return {
+      props: {
+        bRUpd: res.data.data.bRUpd,
+        bRUpl: res.data.data.bRUpl,
+        bPop: res.data.data.bPop,
+      },
+    };
+  } catch (err) {
+    return {
+      notFound: true,
+    };
+  }
+};
+
+const Index = (props: Props) => {
+  const bg = useColorModeValue("white", "gray.800");
+  const mainColor = useColorModeValue("osu.600", "osu.300");
 
   return (
     <>
@@ -100,7 +108,7 @@ const Index = () => {
                   }}
                   gap={4}
                 >
-                  {bPop.map((b, i) => (
+                  {props.bPop.map((b, i) => (
                     <NextLink
                       key={`bPop-${i}`}
                       href={`/beatmaps/${b.beatmapset_id}/${b.beatmap_id}`}
@@ -169,7 +177,7 @@ const Index = () => {
                   }}
                   gap={4}
                 >
-                  {bRUpl.map((b, i) => (
+                  {props.bRUpl.map((b, i) => (
                     <NextLink
                       key={`bPop-${i}`}
                       href={`/beatmaps/${b.beatmapset_id}/${b.beatmap_id}`}
@@ -219,7 +227,7 @@ const Index = () => {
                   }}
                   gap={4}
                 >
-                  {bRUpd.map((b, i) => (
+                  {props.bRUpd.map((b, i) => (
                     <NextLink
                       key={`bPop-${i}`}
                       href={`/beatmaps/${b.beatmapset_id}/${b.beatmap_id}`}

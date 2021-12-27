@@ -1,4 +1,6 @@
+import { GetServerSideProps } from "next";
 import Head from "next/head";
+
 import {
   Box,
   useColorModeValue,
@@ -7,9 +9,8 @@ import {
   Text,
   Link,
 } from "@chakra-ui/react";
+
 import axios from "axios";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -23,55 +24,37 @@ import {
 import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
 import { BeatmapResponseFull, PredictionChartData } from "../../../types";
-import {
-  DEFAULT_BEATMAP,
-  DEFAULT_PREDICTION_CHART_DATA,
-  MAP_TYPENAME,
-} from "../../../const";
+import { MAP_TYPENAME } from "../../../const";
 
-const Index = () => {
-  const router = useRouter();
-  const { beatmapset_id, beatmap_id } = router.query;
+interface Props {
+  mapType: string;
+  beatmap: BeatmapResponseFull;
+  chartData: PredictionChartData;
+  beatmapset_id: number;
+  beatmap_id: number;
+}
 
-  // ChakraUI colors
-  const bg = useColorModeValue("white", "gray.800");
-  const mainColor = useColorModeValue("osu.600", "osu.300");
-
-  // Google chart colors
-  const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
-  const chartColor = useColorModeValue("#4a5568", "#ffffff");
-
-  const [mapTypesStr, setMapTypeStr] = useState("");
-  const [beatmap, setBeatmap] = useState<BeatmapResponseFull>(DEFAULT_BEATMAP);
-  const [chartData, setChartData] = useState<PredictionChartData>(
-    DEFAULT_PREDICTION_CHART_DATA
-  );
-
-  useEffect(() => {
-    if (
-      typeof beatmapset_id === "undefined" &&
-      typeof beatmap_id === "undefined"
-    ) {
-      return;
-    }
-    axios({
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  try {
+    const res = await axios({
       method: "get",
-      url: `http://api.osuclassy-dev.com/beatmaps/${beatmapset_id}/${beatmap_id}`,
-    })
-      .then((res) => {
-        const mapType = Object.keys(res.data.data.beatmap)
-          .map((v) => {
-            if (v.endsWith("_p")) {
-              if (res.data.data.beatmap[v] >= 0.5) {
-                return `${MAP_TYPENAME[v.replace("_p", "")]}`;
-              }
-            }
-            return null;
-          })
-          .filter((v) => v !== null);
-        setMapTypeStr(mapType.join(", "));
-        setBeatmap(res.data.data.beatmap);
-        setChartData({
+      url: `http://api.osuclassy-dev.com/beatmaps/${context.query.beatmapset_id}/${context.query.beatmap_id}`,
+    });
+    const mapType = Object.keys(res.data.data.beatmap)
+      .map((v) => {
+        if (v.endsWith("_p")) {
+          if (res.data.data.beatmap[v] >= 0.5) {
+            return `${MAP_TYPENAME[v.replace("_p", "")]}`;
+          }
+        }
+        return null;
+      })
+      .filter((v) => v !== null);
+    return {
+      props: {
+        mapType: mapType.join(", "),
+        beatmap: res.data.data.beatmap,
+        chartData: {
           data: [
             {
               name: "Alternate",
@@ -87,23 +70,38 @@ const Index = () => {
             { name: "Stream", value: res.data.data.beatmap.stream_p },
             { name: "Tech", value: res.data.data.beatmap.tech_p },
           ],
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [beatmapset_id, beatmap_id]);
+        },
+        beatmapset_id: context.query.beatmapset_id,
+        beatmap_id: context.query.beatmap_id,
+      },
+    };
+  } catch (err) {
+    return {
+      notFound: true,
+    };
+  }
+};
+
+const Index = (props: Props) => {
+  // ChakraUI colors
+  const bg = useColorModeValue("white", "gray.800");
+  const mainColor = useColorModeValue("osu.600", "osu.300");
+
+  // Chart colors
+  const chartAxisColor = useColorModeValue("#ff5ea3", "#ff94c4");
+  const chartColor = useColorModeValue("#4a5568", "#ffffff");
 
   return (
     <>
       <Head>
         <title>
-          OsuClassy - Beatmap Predictor | BeatmapSet:{beatmapset_id} Beatmap:
-          {beatmap_id}
+          OsuClassy - Beatmap Predictor | BeatmapSet:{props.beatmapset_id}{" "}
+          Beatmap:
+          {props.beatmap_id}
         </title>
         <meta
           name={"description"}
-          content={`Predicted beatmap. BeatmapSet is ${beatmapset_id} Beatmap is ${beatmap_id}`}
+          content={`Predicted beatmap. BeatmapSet is ${props.beatmapset_id} Beatmap is ${props.beatmap_id}`}
         />
       </Head>
       <Container>
@@ -116,7 +114,7 @@ const Index = () => {
             Beatmap
           </Heading>
           <Text fontSize={"xl"} textAlign={"center"}>
-            Last updated: {beatmap.updated_at ?? "Unknown"}
+            Last updated: {props.beatmap.updated_at ?? "Unknown"}
           </Text>
         </Box>
         <Box
@@ -131,7 +129,7 @@ const Index = () => {
             <Box minW={{ base: "xs", md: "xl" }}>
               <ResponsiveContainer width={"100%"} height={400}>
                 <BarChart
-                  data={chartData.data}
+                  data={props.chartData.data}
                   layout={"vertical"}
                   margin={{ left: 20, right: 15, top: 40 }}
                 >
@@ -159,20 +157,18 @@ const Index = () => {
               minW={{ base: "xs", md: "md" }}
               height={"400px"}
             >
-              {beatmap !== null && (
-                <BeatmapInfo
-                  title={beatmap.title}
-                  artist={beatmap.artist}
-                  version={beatmap.version}
-                  mappedBy={beatmap.creator}
-                  link={`https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#osu/${beatmap.beatmap_id}`}
-                  imgSrc={`https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`}
-                />
-              )}
+              <BeatmapInfo
+                title={props.beatmap.title}
+                artist={props.beatmap.artist}
+                version={props.beatmap.version}
+                mappedBy={props.beatmap.creator}
+                link={`https://osu.ppy.sh/beatmapsets/${props.beatmap.beatmapset_id}#osu/${props.beatmap.beatmap_id}`}
+                imgSrc={`https://assets.ppy.sh/beatmaps/${props.beatmap.beatmapset_id}/covers/cover.jpg`}
+              />
             </Box>
           </Stack>
           <Box marginLeft={5} marginBottom={5} width={"100%"}>
-            <Text>Map type: {mapTypesStr}</Text>
+            <Text>Map type: {props.mapType}</Text>
           </Box>
         </Box>
       </Container>

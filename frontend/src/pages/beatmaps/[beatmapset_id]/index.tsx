@@ -1,5 +1,7 @@
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import NextLink from "next/link";
+
 import {
   Box,
   Grid,
@@ -9,47 +11,48 @@ import {
   Link,
   Flex,
 } from "@chakra-ui/react";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import axios from "axios";
 
 import { Container } from "../../../components/Container";
 import BeatmapInfo from "../../../components/BeatmapInfo";
 import { BeatmapResponse } from "../../../types";
 
-const Index = () => {
-  const bg = useColorModeValue("white", "gray.800");
+interface Props {
+  beatmaps: BeatmapResponse[];
+  beatmapset_id: number;
+}
 
-  const router = useRouter();
-  const { beatmapset_id } = router.query;
-
-  const [beatmaps, setBeatmaps] = useState<BeatmapResponse[]>([]);
-
-  useEffect(() => {
-    if (typeof beatmapset_id === "undefined") {
-      return;
-    }
-    axios({
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  try {
+    const res = await axios({
       method: "get",
-      url: `http://api.osuclassy-dev.com/beatmaps/${beatmapset_id}`,
-    })
-      .then((res) => {
-        setBeatmaps(res.data.data.beatmaps);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [beatmapset_id]);
+      url: `http://api.osuclassy-dev.com/beatmaps/${context.query.beatmapset_id}`,
+    });
+    return {
+      props: {
+        beatmaps: res.data.data.beatmaps,
+        beatmapset_id: context.query.beatmapset_id,
+      },
+    };
+  } catch (err) {
+    return {
+      notFound: true,
+    };
+  }
+};
+
+const Index = (props: Props) => {
+  const bg = useColorModeValue("white", "gray.800");
 
   return (
     <>
       <Head>
         <title>
-          OsuClassy - Beatmap Predictor | BeatmapSet:{beatmapset_id}
+          OsuClassy - Beatmap Predictor | BeatmapSet:{props.beatmapset_id}
         </title>
         <meta
           name={"description"}
-          content={`Set of beatmaps with the same beatmapset_id. BeatmapSet is ${beatmapset_id}`}
+          content={`Set of beatmaps with the same beatmapset_id. BeatmapSet is ${props.beatmapset_id}`}
         />
       </Head>
       <Container>
@@ -64,7 +67,7 @@ const Index = () => {
             <VStack>
               <Flex w={"100%"}>
                 <Heading fontSize="4xl" p={5}>
-                  BeatmapSet:{beatmapset_id}
+                  BeatmapSet:{props.beatmapset_id}
                 </Heading>
               </Flex>
               <Box
@@ -82,7 +85,7 @@ const Index = () => {
                   }}
                   gap={4}
                 >
-                  {beatmaps.map((b, i) => (
+                  {props.beatmaps.map((b, i) => (
                     <NextLink
                       key={`bPop-${i}`}
                       href={`/beatmaps/${b.beatmapset_id}/${b.beatmap_id}`}
