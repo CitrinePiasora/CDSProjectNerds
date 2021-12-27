@@ -5,4 +5,3 @@ metadata:
   namespace: osuclassy-dev
 data:
   database-url: db-service
-  backend-url: osuclassy-backend-service

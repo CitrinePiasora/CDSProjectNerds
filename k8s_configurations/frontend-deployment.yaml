@@ -21,13 +21,6 @@ spec:
           imagePullPolicy: Never # Will error out if not set, because the image is build locally
           ports:
             - containerPort: 3000
-          env:
-            - name: BE_URL
-              value: api.osuclassy-dev.com
-              # valueFrom:
-              #   configMapKeyRef:
-              #     name: configmaps
-              #     key: backend-url
 ---
 apiVersion: v1
 kind: Service
