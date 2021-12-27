@@ -5,7 +5,6 @@ import NextLink from "next/link";
 
 import {
   Box,
-  Container,
   Flex,
   Grid,
   Heading,
@@ -19,6 +18,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 import BeatmapInfo from "../../components/BeatmapInfo";
 import { BeatmapResponse } from "../../types";
+import { Container } from "../../components/Container";
 
 interface Props {
   beatmaps: BeatmapResponse[];
