@@ -38,7 +38,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const res = await axios({
       method: "get",
-      url: `http://api.osuclassy.fauzanardh.me/beatmaps/${context.query.beatmapset_id}/${context.query.beatmap_id}`,
+      url: `https://api.osuclassy.fauzanardh.me/beatmaps/${context.query.beatmapset_id}/${context.query.beatmap_id}`,
     });
     const mapType = Object.keys(res.data.data.beatmap)
       .map((v) => {

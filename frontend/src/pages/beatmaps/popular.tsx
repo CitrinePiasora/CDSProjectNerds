@@ -30,7 +30,7 @@ interface Props {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const res = await axios.get(
-      `http://api.osuclassy.fauzanardh.me/beatmaps/popular?page=1&limit=6`
+      `https://api.osuclassy.fauzanardh.me/beatmaps/popular?page=1&limit=6`
     );
     return {
       props: {
@@ -58,7 +58,7 @@ const BMPopular = (props: Props) => {
   const fetchData = async () => {
     try {
       const res = await axios.get(
-        `http://api.osuclassy.fauzanardh.me/beatmaps/popular?page=${currentPage}&limit=6`
+        `https://api.osuclassy.fauzanardh.me/beatmaps/popular?page=${currentPage}&limit=6`
       );
       setBeatmaps([...beatmaps, ...res.data.data.beatmaps]);
       setHasMoreItems(res.data.data.beatmaps.length > 0);
