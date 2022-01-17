@@ -56,7 +56,7 @@ app = FastAPI(
         "url": "https://opensource.org/licenses/MIT",
     },
     openapi_tags=tags_metadata,
-    root_path="/api",
+    root_path="/",
     docs_url=None,
     redoc_url=None,
 )
@@ -212,7 +212,7 @@ async def get_beatmaps_recent(limit: int = 10, page: int = 1):
     # If value is negative, return the first page
     offset = limit * (page - 1)
     offset = offset if offset >= 0 else 0
-    
+
     async with async_session() as session:
         async with session.begin():
             beatmaps = await BeatmapDBDAL(session).get_beatmaps_recent(limit, offset)
