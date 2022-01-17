@@ -125,7 +125,7 @@ const Predict = () => {
       setProcessing(false);
       toast({
         title: "Success",
-        description: `${prediction.message} Processing time: ${prediction.data.processing_time}`,
+        description: `${res.data.message} Processing time: ${res.data.data.processing_time}`,
         status: "success",
         duration: 3000,
         isClosable: true,
