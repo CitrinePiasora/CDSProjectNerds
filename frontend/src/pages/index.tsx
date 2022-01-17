@@ -29,7 +29,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const res = await axios({
       method: "get",
-      url: `http://api.osuclassy-dev.com/beatmaps/preview`,
+      url: `http://api.osuclassy.fauzanardh.me/beatmaps/preview`,
     });
     return {
       props: {

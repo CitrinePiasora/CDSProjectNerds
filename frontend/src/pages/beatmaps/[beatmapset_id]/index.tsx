@@ -26,7 +26,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const res = await axios({
       method: "get",
-      url: `http://api.osuclassy-dev.com/beatmaps/${context.query.beatmapset_id}`,
+      url: `http://api.osuclassy.fauzanardh.me/beatmaps/${context.query.beatmapset_id}`,
     });
     return {
       props: {
