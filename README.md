@@ -1,4 +1,5 @@
-# Cloud and Distributive Systems Final Project Repository
+# OSU CLASSY
+A Cloud Native App that predicts and tries to classify the type of beatmap for the game Osu!
 
 ### Members
 
